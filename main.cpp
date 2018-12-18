@@ -90,28 +90,28 @@ int main() {
 //        cout<<endl;
 //    }
 //
-
-    MAP_TRACKS map_tracks1;
-    MAP_TRACK track0,track1,track2;
-    track0[3]=10,track0[1]=2,track0[2]=12; //track1
-    track1[3]=1,track1[2]=5;               //track2
-    track2[1]=34,track2[2]=17;             //track3
-
-    map_tracks1[0]=track0;
-    map_tracks1[1]=track1;
-    map_tracks1[2]=track2;
-
-    set<int> reconstructed_track_id;
-    reconstructed_track_id.insert(0);
-    reconstructed_track_id.insert(1);
-
-    set<int> remaining_image_id;
-    remaining_image_id.insert(3);
-    remaining_image_id.insert(1);
-    remaining_image_id.insert(2);
-
-    int out_image;
-    Find_Next_Image(remaining_image_id,reconstructed_track_id,map_tracks1,out_image);
+//
+//    MAP_TRACKS map_tracks1;
+//    MAP_TRACK track0,track1,track2;
+//    track0[3]=10,track0[1]=2,track0[2]=12; //track1
+//    track1[3]=1,track1[2]=5;               //track2
+//    track2[1]=34,track2[2]=17;             //track3
+//
+//    map_tracks1[0]=track0;
+//    map_tracks1[1]=track1;
+//    map_tracks1[2]=track2;
+//
+//    set<int> reconstructed_track_id;
+//    reconstructed_track_id.insert(0);
+//    reconstructed_track_id.insert(1);
+//
+//    set<int> remaining_image_id;
+//    remaining_image_id.insert(3);
+//    remaining_image_id.insert(1);
+//    remaining_image_id.insert(2);
+//
+//    int out_image;
+//    Find_Next_Image(remaining_image_id,reconstructed_track_id,map_tracks1,out_image);
 
 
 
@@ -121,58 +121,59 @@ int main() {
 //    cout<<id<<endl;
 
 
-//    vector<KeyPoint> kps;
-//    Mat desc;
-//
-//    string img0="/Users/xujun/CLionProjects/Incremental_SfM/Images/0.jpg";
-//    string img1="/Users/xujun/CLionProjects/Incremental_SfM/Images/1.jpg";
-//    string img2="/Users/xujun/CLionProjects/Incremental_SfM/Images/2.jpg";
-//
-//    Mat m_img0,m_img1,m_img2;
-//    m_img0=imread(img0);
-//    m_img1=imread(img1);
-//    m_img2=imread(img2);
-//
-//    MAP_IMGS images;
-//    images[0]=img0;
-//    images[1]=img1;
-//    images[2]=img2;
+    vector<KeyPoint> kps;
+    Mat desc;
+
+    string img0="/Users/xujun/CLionProjects/Incremental_SfM/Images/0.jpg";
+    string img1="/Users/xujun/CLionProjects/Incremental_SfM/Images/1.jpg";
+    string img2="/Users/xujun/CLionProjects/Incremental_SfM/Images/2.jpg";
+
+    Mat m_img0,m_img1,m_img2;
+    m_img0=imread(img0);
+    m_img1=imread(img1);
+    m_img2=imread(img2);
+
+    MAP_IMGS images;
+    images[0]=img0;
+    images[1]=img1;
+    images[2]=img2;
 
     // 2881.252 ,    0     , 1416.0
     //    0     , 2881.252 , 1064.0
     //    0     ,    0     ,   1
-//    Mat K(Matx33d(
-//            2881.252 , 0 , 1416.0 ,
-//            0 , 0 , 1064.0 ,
-//            0 , 0 , 1
-//            ));
-//
-//
-//    MAP_IMGS valid_images;
-//    MAP_KEYPOINTS all_kps;
-//    MAP_DESCS all_descs;
-//
-//    MAP_MATCHES map_matches;
-//    map<pair<int,int>,vector<DMatch>> map_allMatches_DMatch;
-//
-//    Compute_SIFT_Features_All(images,valid_images,all_kps,all_descs);
-//    Compute_Matches_All(K,all_descs,all_kps,map_matches,map_allMatches_DMatch);
-//
-//    vector<KeyPoint> kps_one,kps_two;
-//    for(const auto & iter:all_kps[0])
-//    {
-//        kps_one.push_back(iter.second);
-//    }
-//
-//    for(const auto & iter:all_kps[1])
-//    {
-//        kps_two.push_back(iter.second);
-//    }
-//
-//    Mat out_image;
-//    drawMatches(m_img0,kps_one,m_img1,kps_two,map_allMatches_DMatch[make_pair(0,1)],out_image);
-//    imshow("o",out_image);
-//    waitKey();
+    Mat K(Matx33d(
+            2881.252 , 0 , 1416.0 ,
+            0 , 2881.252 , 1064.0 ,
+            0 , 0 , 1
+            ));
+
+
+    MAP_IMGS valid_images;
+    MAP_KEYPOINTS all_kps;
+    MAP_DESCS all_descs;
+
+    MAP_MATCHES map_matches;
+    map<pair<int,int>,vector<DMatch>> map_allMatches_DMatch;
+
+    Compute_SIFT_Features_All(images,valid_images,all_kps,all_descs);
+
+    Compute_Matches_All(K,all_descs,all_kps,map_matches,map_allMatches_DMatch);
+
+    vector<KeyPoint> kps_one,kps_two;
+    for(const auto & iter:all_kps[0])
+    {
+        kps_one.push_back(iter.second);
+    }
+
+    for(const auto & iter:all_kps[1])
+    {
+        kps_two.push_back(iter.second);
+    }
+
+    Mat out_image;
+    drawMatches(m_img0,kps_one,m_img1,kps_two,map_allMatches_DMatch[make_pair(0,1)],out_image);
+    imshow("o",out_image);
+    waitKey();
 
 
 //    cout<<all_kps.size()<<endl;

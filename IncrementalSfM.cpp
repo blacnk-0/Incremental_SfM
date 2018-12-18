@@ -231,7 +231,7 @@ void Incremental_Process(
     //find feature correspondence to triangulate
     //p1 is in_Process feat point
     vector<Point2f> p1,p2;
-    for(int i=0;i<vec_matches.size();++i)
+    for(VEC_MATCHES::size_type i=0;i<vec_matches.size();++i)
     {
         if(best_match_pair.first==in_ProcessImgID)
         {
