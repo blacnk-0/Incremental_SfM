@@ -3,12 +3,13 @@
 //
 
 #include "IncrementalSfM.h"
+#include <vector>
 
 
 //choose initial pair with most matches
 bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,pair<int,int> & out_ImageID)
 {
-    int max{-1};
+    vector<pair<int  , int >>::size_type max{0};
     pair<int,int> p_ImagePair;
 
     for(const auto & elem:in_map_matches)
@@ -73,8 +74,11 @@ void Reconstruct_Initial_Pair(
     triangulatePoints(projection1,projection2,in_p1,in_p2,mat_structure);
 
     out_structure.clear();
-    out_structure.reserve(mat_structure.cols);
+    //Safe to convert ,mat_structure.cols is always positive
+    vector<Point3f>::size_type mat_structure_cols_size=mat_structure.cols;
+    out_structure.reserve(mat_structure_cols_size);
 
+    //Safe to use int, mat_structure.cols is type int
     for(int i=0;i<mat_structure.cols;++i)
     {
         Mat_<float> col=mat_structure.col(i);
@@ -93,7 +97,9 @@ bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &
 
     int count1 = countNonZero(mask);
     int count2 = recoverPose(E, in_p1, in_p2, out_R, out_T, focal_length, principle_point, mask);
-    if ((double) count2 / (double) count1 < 0.7) {
+    double count1_div_count2= (double)count1/(double)count2;
+    //ratio of points in front of camera
+    if ( count1_div_count2 < 0.7) {
         return false;
     }
 
@@ -103,7 +109,7 @@ bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &
 //Find Next Image Prepare for Next Round Reconstruction
 bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID)
 {
-    int d_max{-1};
+    set<int>::size_type d_max{0};
     int d_imageID{-1};
 
     for(const int & imageID:in_remaing_imageID)
@@ -156,8 +162,8 @@ void Incremental_Process(
 {
     //Find reconstructed image matches best with current process image
     pair<int,int> best_match_pair(-1,-1);
-    int d_matchNumbers{-1};
-    for(int i=0;i<in_reconstructed_images.size();++i)
+    VEC_MATCHES::size_type d_matchNumbers{0};
+    for(vector<int>::size_type i=0;i<in_reconstructed_images.size();++i)
     {
         //ensure I < J
         int I=std::min(in_ProcessImgID,in_reconstructed_images[i]);
@@ -177,7 +183,10 @@ void Incremental_Process(
     VEC_MATCHES vec_matches=in_matches[best_match_pair];
     vector<Point3f> points_3D;
     vector<Point2f> featurePoints;
-    for(int i=0;i<vec_matches.size();++i)
+    //if 2D-3D correspondences is too little, may have problem to solve PnP Problem
+    //if this happens, 2D-3D correspondences should get from all reconstructured images, use FindTrack_with_ImagePair
+    //or brute force
+    for(VEC_MATCHES::size_type i=0;i<vec_matches.size();++i)
     {
         //query is not in_ProcessingImgID
         //train is in_ProcessingImgID
@@ -200,8 +209,10 @@ void Incremental_Process(
 
         if(out_corresponds[queryImgID][queryID]!=-1)
         {
+            //get 3D points from query
             int point_3d_index=out_corresponds[queryImgID][queryID];
             points_3D.push_back(out_structure[point_3d_index]);
+            //get correspondence feature point from train
             featurePoints.push_back(in_keypoints[trainImgID][trainID].pt);
         }
 
@@ -272,7 +283,7 @@ void Incremental_Process(
     out_remaining_images.erase(in_ProcessImgID);
 
     //update structure and correspndence and track
-    for(int i=0;i<vec_matches.size();++i)
+    for(VEC_MATCHES::size_type i=0;i<vec_matches.size();++i)
     {
         //query means already reconstructed
         int queryImgID,trainImgID;
@@ -297,11 +308,12 @@ void Incremental_Process(
             //update out_structure
             out_structure.push_back(new_structure[i]);
             //update query correspondence
-            out_corresponds[queryImgID][queryFeatID]=out_structure.size()-1;
+            out_corresponds[queryImgID][queryFeatID]=int(out_structure.size())-1;
             //update train correspondence
-            out_corresponds[trainImgID][trainFeatID]=out_structure.size()-1;
+            out_corresponds[trainImgID][trainFeatID]=int(out_structure.size())-1;
 
             //may have problem
+            //update track
             int new_trackID=FindTrack_with_ImageIDandFeatID(trainImgID,trainFeatID,in_all_tracks);
             if(new_trackID==-1)
             {
@@ -312,7 +324,7 @@ void Incremental_Process(
         } else{
             //update correspondence
             out_corresponds[trainImgID][trainFeatID]=out_corresponds[queryImgID][queryFeatID];
-            //no need to update track
+            //3D point already exists, no need to update track
         }
     }
 }
@@ -337,8 +349,9 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
         remaining_images.emplace(img.first);
     }
 
-    //problem !!
+
     pair<int,int> initial_pair;
+    //return initial_pair which I < J
     if(!Choose_Initial_Pair(in_matches,initial_pair))
     {
         cout<<"Choose Initial Pair Failed\n";
@@ -396,7 +409,7 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
     vector<vector<int>> correspond_ImgID_FeatID_and_3DPt;
     //Initialize
     correspond_ImgID_FeatID_and_3DPt.resize(in_images.size());
-    for(int i=0;i<correspond_ImgID_FeatID_and_3DPt.size();++i)
+    for(vector<vector<int>>::size_type i=0;i<correspond_ImgID_FeatID_and_3DPt.size();++i)
     {
         correspond_ImgID_FeatID_and_3DPt[i].resize(in_keypoints[i].size(),-1);
     }

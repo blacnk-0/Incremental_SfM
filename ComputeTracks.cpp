@@ -32,6 +32,7 @@ void Compute_Tracks(UnionFind &uf_tree, MAP_MATCHES & in_MapMatches,flat_pair_ma
     }
 
     //use NODE to sort
+    //make a track a sorted track
     out_map_node_to_index.sort() ;
 
     //Initialize uf_tree
