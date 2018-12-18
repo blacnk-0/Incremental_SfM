@@ -113,12 +113,12 @@ void Filter_Tracks(UnionFind & in_ufTree,flat_pair_map<pair<int,int>,int> & in_m
     }
 
     //Export Good Track to out_tracks
-    for(int i=0;i<in_map_node_to_index.size();++i)
+    for(uint32_t i=0;i<in_map_node_to_index.size();++i)
     {
         const auto & elem=in_map_node_to_index[i];
         int trackID=in_ufTree.m_cc_parent[i];
 
-        if(in_ufTree.m_cc_size[trackID]>1 && trackID!=std::numeric_limits<unsigned>::max())
+        if(trackID!=std::numeric_limits<unsigned>::max() && in_ufTree.m_cc_size[trackID]>1 )
         {
             out_tracks[trackID].insert(elem.first);
         }
