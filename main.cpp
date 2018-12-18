@@ -20,15 +20,8 @@ using namespace std;
 using namespace cv;
 
 int main() {
-    vector<int>::size_type i{0};
-    cout<<i<<endl;
-    ++i;
-    cout<<i<<endl;
-    i+=10;
-    cout<<i<<endl;
-    i+=10000000;
-    cout<<i<<endl;
-    cout<<std::numeric_limits<int>::max()<<endl;
+
+
 
 
 //
@@ -97,16 +90,32 @@ int main() {
 //        cout<<endl;
 //    }
 //
-//    MAP_TRACKS map_tracks1;
-//    MAP_TRACK track0,track1,track2;
-//    track0[0]=10,track0[1]=2,track0[2]=12; //track1
-//    track1[0]=1,track1[2]=5;               //track2
-//    track2[1]=34,track2[2]=17;             //track3
-//
-//    map_tracks1[0]=track0;
-//    map_tracks1[1]=track1;
-//    map_tracks1[2]=track2;
-//
+
+    MAP_TRACKS map_tracks1;
+    MAP_TRACK track0,track1,track2;
+    track0[3]=10,track0[1]=2,track0[2]=12; //track1
+    track1[3]=1,track1[2]=5;               //track2
+    track2[1]=34,track2[2]=17;             //track3
+
+    map_tracks1[0]=track0;
+    map_tracks1[1]=track1;
+    map_tracks1[2]=track2;
+
+    set<int> reconstructed_track_id;
+    reconstructed_track_id.insert(0);
+    reconstructed_track_id.insert(1);
+
+    set<int> remaining_image_id;
+    remaining_image_id.insert(3);
+    remaining_image_id.insert(1);
+    remaining_image_id.insert(2);
+
+    int out_image;
+    Find_Next_Image(remaining_image_id,reconstructed_track_id,map_tracks1,out_image);
+
+
+
+    //
 //    set<int> set_track_id;
 //    int id=FindTrack_with_ImageIDandFeatID(0,2,map_tracks1);
 //    cout<<id<<endl;

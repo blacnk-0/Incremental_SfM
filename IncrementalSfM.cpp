@@ -107,6 +107,7 @@ bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &
 }
 
 //Find Next Image Prepare for Next Round Reconstruction
+//If there are multi image with the same number of common tracks, this function choose the smallest image id
 bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID)
 {
     set<int>::size_type d_max{0};
