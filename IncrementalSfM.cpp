@@ -154,12 +154,14 @@ void Incremental_Process(
         const MAP_TRACKS & in_all_tracks,
         MAP_MATCHES & in_matches,
         MAP_KEYPOINTS & in_keypoints,
+        MAP_COLORS & in_all_colors,
         vector<vector<int>> & out_corresponds,
         vector<Point3f> & out_structure,
         map<int,Mat> & out_rotations,
         map<int,Mat> & out_translations,
         set<int> & out_remaining_images,
-        set<int> & out_recons_trackID)
+        set<int> & out_recons_trackID,
+        vector<Vec3b> & out_colors)
 {
     //Find reconstructed image matches best with current process image
     pair<int,int> best_match_pair(-1,-1);
@@ -243,6 +245,8 @@ void Incremental_Process(
             p1.push_back(in_keypoints[best_match_pair.second][vec_matches[i].second].pt);
             p2.push_back(in_keypoints[best_match_pair.first][vec_matches[i].first].pt);
         }
+        Vec3b color=in_all_colors[best_match_pair.first][vec_matches[i].first];
+        out_colors.push_back(color);
     }
 
     //projection1 is in_processing
@@ -339,7 +343,9 @@ void Incremental_Process(
 //4.reconsturctured_images -- ImageID
 //5.out_rotations -- Mat
 //6.out_translations -- Mat
-void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,MAP_KEYPOINTS & in_keypoints,
+void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,
+        MAP_KEYPOINTS & in_keypoints,
+              MAP_COLORS & in_colors,
               map<int,Mat> out_rotations,
               map<int,Mat> out_translations)
 {
@@ -377,6 +383,7 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
     VEC_MATCHES initial_matches=in_matches[initial_pair];
     vector<Point2f> vec_kpLocation1;
     vector<Point2f> vec_kpLocation2;
+    vector<Vec3b> colors;
 
     if(initial_matches.empty())
     {
@@ -392,6 +399,7 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
         int _j=feat_pair.second;
         vec_kpLocation1.push_back(in_keypoints[I][_i].pt);
         vec_kpLocation2.push_back(in_keypoints[J][_j].pt);
+        colors.push_back(in_colors[I][_i]);
     }
 
     Mat R;
@@ -437,8 +445,8 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
     int d_NextImageID{-1};
     while(Find_Next_Image(remaining_images,reconstructured_track_ID,in_tracks,d_NextImageID))
     {
-        Incremental_Process(in_K,d_NextImageID,reconstructed_imgs,in_tracks,in_matches,in_keypoints,correspond_ImgID_FeatID_and_3DPt,structure,
-                            out_rotations,out_translations,remaining_images,reconstructured_track_ID);
+        Incremental_Process(in_K,d_NextImageID,reconstructed_imgs,in_tracks,in_matches,in_keypoints,in_colors,correspond_ImgID_FeatID_and_3DPt,structure,
+                            out_rotations,out_translations,remaining_images,reconstructured_track_ID,colors);
     }
 
     //save to file
@@ -446,7 +454,7 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
 
 
     //write to yml file
-    FileStorage fs("3Dstructure.yml", FileStorage::WRITE);
+    FileStorage fs("structure.yml", FileStorage::WRITE);
     fs << "Camera Count" << n;
     fs << "Point Count" << (int)structure.size();
 

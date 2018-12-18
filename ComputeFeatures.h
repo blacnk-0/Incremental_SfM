@@ -27,6 +27,18 @@ void Compute_SIFT_Features_All(const MAP_IMGS & in_images,
         MAP_KEYPOINTS & out_all_keypoints ,
         MAP_DESCS & out_all_descs);
 
+//Extented, record colors
+void Compute_SIFT_Feature_Single_Color(const string & in_sImgPath,vector<KeyPoint> & out_KeyPoints,MAT_DESC & out_Descs,
+        MAP_COLOR & out_color);
+
+//Extended, record colors
+void Compute_SIFT_Features_All_Colors(const MAP_IMGS & in_images,
+                               MAP_IMGS & out_valid_images,
+                               MAP_KEYPOINTS & out_all_keypoints ,
+                               MAP_DESCS & out_all_descs,
+                               MAP_COLORS & out_colors);
+
+
 void Convert_MapKps_to_VecKps(const MAP_KEYPOINT & in_MapKps,vector<KeyPoint> out_kps);
 
 

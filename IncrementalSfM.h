@@ -55,12 +55,14 @@ void Incremental_Process(
         const MAP_TRACKS & in_all_tracks,
         MAP_MATCHES & in_matches,
         MAP_KEYPOINTS & in_keypoints,
+        MAP_COLORS & in_all_colors,
         vector<vector<int>> & out_corresponds,
         vector<Point3f> & out_structure,
         map<int,Mat> & out_rotations,
         map<int,Mat> & out_translations,
         set<int> & out_remaining_images,
-        set<int> & out_recons_trackID);
+        set<int> & out_recons_trackID,
+        vector<Vec3b> & out_colors);
 
 
 //main SfM and save structure to yml
@@ -71,7 +73,9 @@ void Incremental_Process(
 //4.reconsturctured_images -- ImageID
 //5.out_rotations -- Mat
 //6.out_translations -- Mat
-void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,MAP_KEYPOINTS & in_keypoints,
+void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,
+        MAP_KEYPOINTS & in_keypoints,
+        MAP_COLORS & in_colors,
         map<int,Mat> out_rotations,
         map<int,Mat> out_translations);
 

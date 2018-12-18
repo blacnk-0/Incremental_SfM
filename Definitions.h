@@ -28,10 +28,10 @@ using MAP_KPLOCATION=map<int , Point2f>;
 //MAP LOCS=map imageID to kpLoc
 using MAP_KPLOCATIONS=map<int,MAP_KPLOCATION >;
 
-//
+//Matrix Descriptor
 using MAT_DESC=Mat;
 
-//
+//MAP <ImageID,Descriptors>
 using MAP_DESCS=map< int,MAT_DESC >;
 
 
@@ -46,5 +46,11 @@ using MAP_TRACK=map<int,int>;
 
 //MAP <TrackID, Track>
 using MAP_TRACKS = map<int,MAP_TRACK> ;
+
+//MAP <FeattureID,Color>
+using MAP_COLOR=map<int,Vec3b>;
+
+//MAP <ImageID,Color>
+using MAP_COLORS=map<int,MAP_COLOR>;
 
 #endif //INCREMENTAL_SFM_DEFINITIONS_H

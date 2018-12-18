@@ -154,8 +154,9 @@ int main() {
 
     MAP_MATCHES map_matches;
     map<pair<int,int>,vector<DMatch>> map_allMatches_DMatch;
+    MAP_COLORS map_colors;
 
-    Compute_SIFT_Features_All(images,valid_images,all_kps,all_descs);
+    Compute_SIFT_Features_All_Colors(images,valid_images,all_kps,all_descs,map_colors);
 
     Compute_Matches_All(K,all_descs,all_kps,map_matches,map_allMatches_DMatch);
 
@@ -172,8 +173,15 @@ int main() {
 
     Mat out_image;
     drawMatches(m_img0,kps_one,m_img1,kps_two,map_allMatches_DMatch[make_pair(0,1)],out_image);
-    imshow("o",out_image);
-    waitKey();
+
+    UnionFind uf_tree;
+    flat_pair_map<pair<int,int>,int> map_node_to_index;
+    MAP_TRACKS map_tracks;
+    Compute_Tracks(uf_tree,map_matches,map_node_to_index);
+    Filter_Tracks(uf_tree,map_node_to_index,map_tracks);
+
+    map<int,Mat> out_rotation,out_translation;
+    Main_SfM(K,valid_images,map_tracks,map_matches,all_kps,map_colors,out_rotation,out_translation);
 
 
 //    cout<<all_kps.size()<<endl;
