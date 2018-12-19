@@ -61,6 +61,7 @@ void Reconstruct_Initial_Pair(
     pair<int,Mat> R1_pair=make_pair(in_initialPair.second,in_R);
     pair<int,Mat> T1_pair=make_pair(in_initialPair.second,in_T);
 
+    //Initial out_rotation and out_translation
     out_rotations={R0_pair,R1_pair};
     out_translations={T0_pair,T1_pair};
 
@@ -107,6 +108,7 @@ bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &
 }
 
 //Find Next Image Prepare for Next Round Reconstruction
+//Select image has largest common tracks with current reconstructed tracks
 //If there are multi image with the same number of common tracks, this function choose the smallest image id
 bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID)
 {
@@ -251,8 +253,9 @@ void Incremental_Process(
             p1.push_back(in_keypoints[best_match_pair.second][vec_matches[i].second].pt);
             p2.push_back(in_keypoints[best_match_pair.first][vec_matches[i].first].pt);
         }
-        Vec3b color=in_all_colors[best_match_pair.first][vec_matches[i].first];
-        out_colors.push_back(color);
+        //Colors should not be updated here
+//        Vec3b color=in_all_colors[best_match_pair.first][vec_matches[i].first];
+//        out_colors.push_back(color);
     }
 
     //projection1 is in_processing
@@ -328,19 +331,21 @@ void Incremental_Process(
             //if(new_trackID == -1) only for test
 
             int new_trackID=FindTrack_with_ImageIDandFeatID(queryImgID,queryFeatID,in_all_tracks);
+            //for test
             if(new_trackID==-1)
             {
                 cout<<"Error in FindTrack_with_ImageIDandFeatID in Incremental_Process"<<endl;
             }
             out_recons_trackID.emplace(new_trackID);
 
-
+            //update structure and color
             out_structure.push_back(new_structure[i]);
             out_colors.push_back(in_all_colors[queryImgID][queryFeatID]);
-            for(const auto & img_feat:in_all_tracks[new_trackID])
+
+            for(const auto & img_feat_pair:in_all_tracks[new_trackID])
             {
-                int imgID=img_feat.first;
-                int featID=img_feat.second;
+                int imgID=img_feat_pair.first;
+                int featID=img_feat_pair.second;
 
                 if(imgID==trainImgID || in_reconstructed_images.count(imgID))
                 {
