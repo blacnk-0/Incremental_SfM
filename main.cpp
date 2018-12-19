@@ -121,22 +121,35 @@ int main() {
 //    cout<<id<<endl;
 
 
+
     vector<KeyPoint> kps;
     Mat desc;
 
     string img0="/Users/xujun/CLionProjects/Incremental_SfM/Images/0.jpg";
     string img1="/Users/xujun/CLionProjects/Incremental_SfM/Images/1.jpg";
     string img2="/Users/xujun/CLionProjects/Incremental_SfM/Images/2.jpg";
+    string img3="/Users/xujun/CLionProjects/Incremental_SfM/Images/3.jpg";
+    string img4="/Users/xujun/CLionProjects/Incremental_SfM/Images/4.jpg";
+    string img5="/Users/xujun/CLionProjects/Incremental_SfM/Images/5.jpg";
+    string img6="/Users/xujun/CLionProjects/Incremental_SfM/Images/6.jpg";
+    string img7="/Users/xujun/CLionProjects/Incremental_SfM/Images/7.jpg";
+    string img8="/Users/xujun/CLionProjects/Incremental_SfM/Images/8.jpg";
+    string img9="/Users/xujun/CLionProjects/Incremental_SfM/Images/9.jpg";
+    string img10="/Users/xujun/CLionProjects/Incremental_SfM/Images/10.jpg";
 
-    Mat m_img0,m_img1,m_img2;
-    m_img0=imread(img0);
-    m_img1=imread(img1);
-    m_img2=imread(img2);
+//
+//    Mat m_img0,m_img1,m_img2;
+//    m_img0=imread(img0);
+//    m_img1=imread(img1);
+//    m_img2=imread(img2);
+
 
     MAP_IMGS images;
     images[0]=img0;
     images[1]=img1;
     images[2]=img2;
+    images[3]=img3;
+    images[4]=img4;
 
     // 2881.252 ,    0     , 1416.0
     //    0     , 2881.252 , 1064.0
@@ -171,8 +184,6 @@ int main() {
         kps_two.push_back(iter.second);
     }
 
-    Mat out_image;
-    drawMatches(m_img0,kps_one,m_img1,kps_two,map_allMatches_DMatch[make_pair(0,1)],out_image);
 
     UnionFind uf_tree;
     flat_pair_map<pair<int,int>,int> map_node_to_index;

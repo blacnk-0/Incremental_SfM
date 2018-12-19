@@ -54,7 +54,7 @@ bool Geometry_Verfication(const Mat & in_K, vector<Point2f> & in_p1,vector<Point
 
     //too little inliers
     //inliers less than 0.5
-    if(inlier_count<=15 || (inlier_count/double(in_p1.size())) <0.6)
+    if(inlier_count<=15 || (inlier_count/double(in_p1.size())) <0.5)
     {
         return false;
     }

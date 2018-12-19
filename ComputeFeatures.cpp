@@ -57,7 +57,7 @@ void Compute_SIFT_Feature_Single_Color(const string & in_sImgPath,vector<KeyPoin
     for(const auto & iter:out_KeyPoints)
     {
         const Point2f & p=iter.pt;
-        Vec3b color=image.at<Vec3b>(p.x,p.y);
+        Vec3b color=image.at<Vec3b>(p.y,p.x);
         out_color[i]=color;
         ++i;
     }
