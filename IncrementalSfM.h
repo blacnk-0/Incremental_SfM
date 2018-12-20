@@ -29,9 +29,14 @@ bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,pair<int,int> & out_
 //initial out_translation
 void Reconstruct_Initial_Pair(
         pair<int,int> & in_initialPair,
-        Mat & in_K,Mat & in_R,Mat & in_T, vector<Point2f> & in_p1,vector<Point2f> & in_p2,vector<Point3f> & out_structure,
+        Mat & in_K,Mat & in_R,Mat & in_T, vector<Point2f> & in_p1,vector<Point2f> & in_p2,
+        VEC_MATCHES & in_initial_matches,
+        MAP_TRACKS & in_all_tracks,
+        vector<Point3f> & out_structure,
         map<int,Mat> & out_rotations,
-        map<int,Mat> & out_translations);
+        map<int,Mat> & out_translations,
+        MAP_POINT3D & out_point3d_correspondence,
+        MAP_EXTRINSIC & out_extrinsic_correspondence);
 
 //First Camera [I|0] , Second Camera [R|T]
 bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &in_p2, Mat &out_R, Mat &out_T);
@@ -62,7 +67,9 @@ void Incremental_Process(
         map<int,Mat> & out_translations,
         set<int> & out_remaining_images,
         set<int> & out_recons_trackID,
-        vector<Vec3b> & out_colors);
+        vector<Vec3b> & out_colors,
+        MAP_POINT3D & out_point3d_correspondence,
+        MAP_EXTRINSIC & out_extrinsic_correspondence);
 
 
 //main SfM and save structure to yml

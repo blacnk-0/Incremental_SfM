@@ -3,6 +3,7 @@
 //
 
 #include "IncrementalSfM.h"
+#include "BundleAdjustment.h"
 #include <vector>
 
 
@@ -36,9 +37,14 @@ bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,pair<int,int> & out_
 //initial out_translation
 void Reconstruct_Initial_Pair(
         pair<int,int> & in_initialPair,
-        Mat & in_K,Mat & in_R,Mat & in_T, vector<Point2f> & in_p1,vector<Point2f> & in_p2,vector<Point3f> & out_structure,
+        Mat & in_K,Mat & in_R,Mat & in_T, vector<Point2f> & in_p1,vector<Point2f> & in_p2,
+        VEC_MATCHES & in_initial_matches,
+        MAP_TRACKS & in_all_tracks,
+        vector<Point3d> & out_structure,
         map<int,Mat> & out_rotations,
-        map<int,Mat> & out_translations)
+        map<int,Mat> & out_translations,
+        MAP_POINT3D & out_point3d_correspondence,
+        MAP_EXTRINSIC & out_extrinsic_correspondence)
 {
     //Projection Matrix [R|T] of the initial two cameras
     Mat projection1(3,4,CV_32FC1);
@@ -79,12 +85,28 @@ void Reconstruct_Initial_Pair(
     vector<Point3f>::size_type mat_structure_cols_size=mat_structure.cols;
     out_structure.reserve(mat_structure_cols_size);
 
+    int first_image=in_initialPair.first;
+    int second_image=in_initialPair.second;
+
     //Safe to use int, mat_structure.cols is type int
+    //initial structure and [Point3D,TrackID] correspondence
+    MAP_POINT3D ::size_type count{out_point3d_correspondence.size()}; //always initial count like this
     for(int i=0;i<mat_structure.cols;++i)
     {
+        //Only feature in track can do bundle adjustment
+        if(FindTrack_with_ImageIDandFeatID(first_image,in_initial_matches[i].first,in_all_tracks)==-1)
+        {
+            continue;
+        }
+
+        //update correspondence and structure
+        int trackID=FindTrack_with_ImageIDandFeatID(first_image,in_initial_matches[i].first,in_all_tracks);
+        out_point3d_correspondence[count]=trackID;
+        out_extrinsic_correspondence[count]=out_rotations.size()-1;
         Mat_<float> col=mat_structure.col(i);
         col/=col(3);
         out_structure.push_back(Point3f(col(0),col(1),col(2)));
+        ++count;
     }
 }
 
@@ -158,12 +180,14 @@ void Incremental_Process(
         MAP_KEYPOINTS & in_keypoints,
         MAP_COLORS & in_all_colors,
         vector<vector<int>> & out_corresponds,
-        vector<Point3f> & out_structure,
+        vector<Point3d> & out_structure,
         map<int,Mat> & out_rotations,
         map<int,Mat> & out_translations,
         set<int> & out_remaining_images,
         set<int> & out_recons_trackID,
-        vector<Vec3b> & out_colors)
+        vector<Vec3b> & out_colors,
+        MAP_POINT3D & out_point3d_correspondence,
+        MAP_EXTRINSIC & out_extrinsic_correspondence)
 {
     //Find reconstructed image matches best with current process image
     pair<int,int> best_match_pair(-1,-1);
@@ -229,6 +253,8 @@ void Incremental_Process(
         cout<<"Not enough points to solve PnP problems.\n";
     }
 
+
+    //may set a thresholf for the size of points_3D
     Mat array_R;
     Mat mat_R,mat_T;
     solvePnPRansac(points_3D,featurePoints,in_K,noArray(),array_R,mat_T);
@@ -304,6 +330,8 @@ void Incremental_Process(
     out_remaining_images.erase(in_ProcessImgID);
 
     //update structure and correspndence and track
+    //update point3d correspondence and extrinsic correspondence
+
     for(VEC_MATCHES::size_type i=0;i<vec_matches.size();++i)
     {
         //query means already reconstructed
@@ -334,13 +362,18 @@ void Incremental_Process(
             //for test
             if(new_trackID==-1)
             {
-                cout<<"Error in FindTrack_with_ImageIDandFeatID in Incremental_Process"<<endl;
+                cout<<"Missing hit in FindTrack_with_ImageIDandFeatID in Incremental_Process, unstable match found"<<endl;
+                continue;
             }
             out_recons_trackID.emplace(new_trackID);
 
             //update structure and color
+            //note:out_structure.size() should equal to out_point3d_correspondence.size() and out_extrinsic_correspondence.size()
             out_structure.push_back(new_structure[i]);
             out_colors.push_back(in_all_colors[queryImgID][queryFeatID]);
+
+            out_point3d_correspondence[out_point3d_correspondence.size()]=new_trackID;
+            out_extrinsic_correspondence[out_extrinsic_correspondence.size()]=in_ProcessImgID;
 
             for(const auto & img_feat_pair:in_all_tracks[new_trackID])
             {
@@ -454,9 +487,33 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
         return;
     }
 
+    MAP_POINT3D map_point3D;
+    MAP_EXTRINSIC map_extrinsic;
+
+
     //Scene Structure
-    vector<Point3f> structure;
-    Reconstruct_Initial_Pair(initial_pair,in_K,R,T,vec_kpLocation1,vec_kpLocation2,structure,out_rotations,out_translations);
+    vector<Point3d> structure;
+    Reconstruct_Initial_Pair(initial_pair,in_K,R,T,vec_kpLocation1,vec_kpLocation2,initial_matches,in_tracks,
+            structure,out_rotations,out_translations,map_point3D,map_extrinsic);
+
+    //prepare for bundle adjustment
+    Mat intrinsic(Matx41d(in_K.at<double>(0, 0), in_K.at<double>(1, 1), in_K.at<double>(0, 2), in_K.at<double>(1, 2)));
+    vector<Mat> extrinsics;
+    for(map<int,Mat>::size_type i=0;i<out_rotations.size();++i)
+    {
+        Mat extrinsic(6,1,CV_64FC1);
+        Mat rotation_compressed;
+        Rodrigues(out_rotations[i],rotation_compressed);
+
+        rotation_compressed.copyTo(extrinsic.rowRange(0,3));
+        out_translations[i].copyTo(extrinsic.rowRange(3,6));
+
+        extrinsics.push_back(extrinsic);
+    }
+
+
+    //do bundle adjustment
+    BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,map_extrinsic,reconstructed_imgs);
 
     //Correspondence between [ImageID,FeatureID] and 3D Point
     vector<vector<int>> correspond_ImgID_FeatID_and_3DPt;
@@ -490,9 +547,37 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
     int d_NextImageID{-1};
     while(Find_Next_Image(remaining_images,reconstructured_track_ID,in_tracks,d_NextImageID))
     {
-        Incremental_Process(in_K,d_NextImageID,reconstructed_imgs,in_tracks,in_matches,in_keypoints,
-                in_colors,correspond_ImgID_FeatID_and_3DPt,structure,
-                            out_rotations,out_translations,remaining_images,reconstructured_track_ID,colors);
+        Incremental_Process(in_K,
+                d_NextImageID,
+                reconstructed_imgs,
+                in_tracks,
+                in_matches,
+                in_keypoints,
+                in_colors,
+                correspond_ImgID_FeatID_and_3DPt,
+                structure,
+                out_rotations,
+                out_translations,
+                remaining_images,
+                reconstructured_track_ID,
+                colors,
+                map_point3D,
+                map_extrinsic);
+
+        //prepare for BA
+        for(map<int,Mat>::size_type i=extrinsics.size();i<out_rotations.size();++i)
+        {
+            Mat extrinsic(6,1,CV_64FC1);
+            Mat rotation_compressed;
+            Rodrigues(out_rotations[i],rotation_compressed);
+
+            rotation_compressed.copyTo(extrinsic.rowRange(0,3));
+            out_translations[i].copyTo(extrinsic.rowRange(3,6));
+
+            extrinsics.push_back(extrinsic);
+        }
+
+        BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,map_extrinsic,reconstructed_imgs);
     }
 
     //save to file

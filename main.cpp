@@ -15,12 +15,47 @@
 #include "IncrementalSfM.h"
 #include "flat_pair_map.h"
 
+#include "StringSplit.h"
+#include "tinydir.h"
+
 
 using namespace std;
 using namespace cv;
 
-int main() {
+int main(int argc,char ** argv) {
 
+
+    string s_images_dir;
+    s_images_dir="/Users/xujun/CLionProjects/Incremental_SfM/Images";
+
+    vector<string> vec_files_name;
+    tinydir_dir dir;
+    tinydir_open(&dir,s_images_dir.c_str());
+
+    while (dir.has_next)
+    {
+        tinydir_file file;
+        tinydir_readfile(&dir, &file);
+        if (!file.is_dir)
+        {
+            vec_files_name.push_back(file.path);
+        }
+        tinydir_next(&dir);
+    }
+    tinydir_close(&dir);
+
+    //Filter files
+    vector<string> vec_images_name;
+    for(const auto & file_name:vec_files_name)
+    {
+        vector<string> file_name_after_split=split_by_character(file_name,'.');
+
+        string s_ext_name=file_name_after_split.back();
+        if(s_ext_name=="jpg" || s_ext_name=="JPG" || s_ext_name=="jpeg" || s_ext_name=="png" )
+        {
+            vec_images_name.push_back(file_name);
+        }
+    }
 
 
 
@@ -137,6 +172,22 @@ int main() {
     string img9="/Users/xujun/CLionProjects/Incremental_SfM/Images/9.jpg";
     string img10="/Users/xujun/CLionProjects/Incremental_SfM/Images/10.jpg";
 
+    string m1_p,m2_p;
+    m1_p=img8;
+    m2_p=img9;
+
+
+    vector<KeyPoint> m1_k,m2_k;
+    Mat m1_desc,m2_desc;
+    Compute_SIFT_Feature_Single(m2_p,m2_k,m2_desc);
+    cout<<m2_k.size()<<endl;
+    cout<<m2_desc.size()<<endl;
+
+    Compute_SIFT_Feature_Single(m1_p,m1_k,m1_desc);
+    cout<<m1_k.size()<<endl;
+    cout<<m1_desc.size()<<endl;
+
+
 //
 //    Mat m_img0,m_img1,m_img2;
 //    m_img0=imread(img0);
@@ -160,39 +211,69 @@ int main() {
             0 , 0 , 1
             ));
 
+    MAP_MATCHES out;
+    MAP_DESCS map_descs;
+    map_descs[0]=m1_desc;
+    map_descs[1]=m2_desc;
 
-    MAP_IMGS valid_images;
-    MAP_KEYPOINTS all_kps;
-    MAP_DESCS all_descs;
-
-    MAP_MATCHES map_matches;
-    map<pair<int,int>,vector<DMatch>> map_allMatches_DMatch;
-    MAP_COLORS map_colors;
-
-    Compute_SIFT_Features_All_Colors(images,valid_images,all_kps,all_descs,map_colors);
-
-    Compute_Matches_All(K,all_descs,all_kps,map_matches,map_allMatches_DMatch);
-
-    vector<KeyPoint> kps_one,kps_two;
-    for(const auto & iter:all_kps[0])
+    MAP_KEYPOINT map_keypoint1,map_keypoint2;
+    int count{0};
+    for(const auto & kp:m1_k)
     {
-        kps_one.push_back(iter.second);
+        map_keypoint1[count]=kp;
+        ++count;
     }
 
-    for(const auto & iter:all_kps[1])
+    count=0;
+    for(const auto & kp:m2_k)
     {
-        kps_two.push_back(iter.second);
+        map_keypoint2[count]=kp;
+        ++count;
+    }
+
+    MAP_KEYPOINTS map_keypoints;
+    map_keypoints[0]=map_keypoint1;
+    map_keypoints[9]=map_keypoint2;
+    Compute_Matches_All(K,map_descs,map_keypoints,out);
+
+    cout<<"out size:"<<out.size()<<endl;
+    for(const auto matches:out)
+    {
+        cout<<matches.second.size()<<endl;
     }
 
 
-    UnionFind uf_tree;
-    flat_pair_map<pair<int,int>,int> map_node_to_index;
-    MAP_TRACKS map_tracks;
-    Compute_Tracks(uf_tree,map_matches,map_node_to_index);
-    Filter_Tracks(uf_tree,map_node_to_index,map_tracks);
-
-    map<int,Mat> out_rotation,out_translation;
-    Main_SfM(K,valid_images,map_tracks,map_matches,all_kps,map_colors,out_rotation,out_translation);
+//    MAP_IMGS valid_images;
+//    MAP_KEYPOINTS all_kps;
+//    MAP_DESCS all_descs;
+//
+//    MAP_MATCHES map_matches;
+//    MAP_COLORS map_colors;
+//
+//    Compute_SIFT_Features_All_Colors(images,valid_images,all_kps,all_descs,map_colors);
+//
+//    Compute_Matches_All(K,all_descs,all_kps,map_matches);
+//
+//    vector<KeyPoint> kps_one,kps_two;
+//    for(const auto & iter:all_kps[0])
+//    {
+//        kps_one.push_back(iter.second);
+//    }
+//
+//    for(const auto & iter:all_kps[1])
+//    {
+//        kps_two.push_back(iter.second);
+//    }
+//
+//
+//    UnionFind uf_tree;
+//    flat_pair_map<pair<int,int>,int> map_node_to_index;
+//    MAP_TRACKS map_tracks;
+//    Compute_Tracks(uf_tree,map_matches,map_node_to_index);
+//    Filter_Tracks(uf_tree,map_node_to_index,map_tracks);
+//
+//    map<int,Mat> out_rotation,out_translation;
+//    Main_SfM(K,valid_images,map_tracks,map_matches,all_kps,map_colors,out_rotation,out_translation);
 
 
 //    cout<<all_kps.size()<<endl;

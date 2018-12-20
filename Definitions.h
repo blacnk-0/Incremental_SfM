@@ -22,10 +22,10 @@ using MAP_KEYPOINT=map<int ,KeyPoint>;
 //MAP_KEYPOINTS= <Image ID, KeyPoints>
 using MAP_KEYPOINTS=map<int ,MAP_KEYPOINT >;
 
-//MAP LOC
+//MAP LOC----no need to use
 using MAP_KPLOCATION=map<int , Point2f>;
 
-//MAP LOCS=map imageID to kpLoc
+//MAP LOCS=map imageID to kpLoc----no need to use
 using MAP_KPLOCATIONS=map<int,MAP_KPLOCATION >;
 
 //Matrix Descriptor
@@ -52,5 +52,11 @@ using MAP_COLOR=map<int,Vec3b>;
 
 //MAP <ImageID,Color>
 using MAP_COLORS=map<int,MAP_COLOR>;
+
+//MAP <structure 3D Point Index,track ID>
+using MAP_POINT3D=map<int,int>;
+
+//MAP <structure 3D Point Index,extrinsic ID>
+using MAP_EXTRINSIC=map<int,int>;
 
 #endif //INCREMENTAL_SFM_DEFINITIONS_H
