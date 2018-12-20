@@ -57,6 +57,11 @@ int main(int argc,char ** argv) {
     }
 
     MAP_IMGS images;
+    MAP_IMGS::size_type count{0};
+    for(const auto & img_name:vec_images_name)
+    {
+        images[count++]=img_name;
+    }
 
     // 2881.252 ,    0     , 1416.0
     //    0     , 2881.252 , 1064.0
@@ -66,19 +71,6 @@ int main(int argc,char ** argv) {
             0 , 2881.252 , 1064.0 ,
             0 , 0 , 1
             ));
-
-    MAP_MATCHES out;
-    MAP_DESCS map_descs;
-    MAP_KEYPOINTS map_keypoints;
-
-    Compute_Matches_All(K,map_descs,map_keypoints,out);
-
-    std::cout<<"out size:"<<out.size()<<std::endl;
-    for(const auto matches:out)
-    {
-        std::cout<<matches.second.size()<<std::endl;
-    }
-
 
     MAP_IMGS valid_images;
     MAP_KEYPOINTS all_kps;
