@@ -44,7 +44,6 @@ void Reconstruct_Initial_Pair(
         std::map<int,cv::Mat> & out_rotations,
         std::map<int,cv::Mat> & out_translations,
         MAP_POINT3D & out_point3d_correspondence,
-        MAP_EXTRINSIC & out_extrinsic_correspondence,
         std::vector<std::vector<int>> & out_correspond_ImgID_FeatID_and_3DPt)
 {
     //Projection Matrix [R|T] of the initial two cameras
@@ -71,6 +70,7 @@ void Reconstruct_Initial_Pair(
     //Initial out_rotation and out_translation
     out_rotations={R0_pair,R1_pair};
     out_translations={T0_pair,T1_pair};
+
 
     cv::Mat intrinsic;
     in_K.convertTo(intrinsic,CV_32FC1);
@@ -104,7 +104,6 @@ void Reconstruct_Initial_Pair(
         //update correspondence and structure
         int trackID=FindTrack_with_ImageIDandFeatID(first_image,in_initial_matches[i].first,in_all_tracks);
         out_point3d_correspondence[count]=trackID;
-        out_extrinsic_correspondence[count]=out_rotations.size()-1;
 
         out_correspond_ImgID_FeatID_and_3DPt[first_image][in_initial_matches[i].first]=count;
         out_correspond_ImgID_FeatID_and_3DPt[second_image][in_initial_matches[i].second]=count;
@@ -192,8 +191,7 @@ void Incremental_Process(
         std::set<int> & out_remaining_images,
         std::set<int> & out_recons_trackID,
         std::vector<cv::Vec3b> & out_colors,
-        MAP_POINT3D & out_point3d_correspondence,
-        MAP_EXTRINSIC & out_extrinsic_correspondence)
+        MAP_POINT3D & out_point3d_correspondence)
 {
     //Find reconstructed image matches best with current process image
     std::pair<int,int> best_match_pair(-1,-1);
@@ -379,13 +377,13 @@ void Incremental_Process(
             out_colors.push_back(in_all_colors[queryImgID][queryFeatID]);
 
             out_point3d_correspondence[out_point3d_correspondence.size()]=new_trackID;
-            out_extrinsic_correspondence[out_extrinsic_correspondence.size()]=in_ProcessImgID;
 
             for(const auto & img_feat_pair:in_all_tracks[new_trackID])
             {
                 int imgID=img_feat_pair.first;
                 int featID=img_feat_pair.second;
 
+                //if image id is in_processing_image or already reconstructed
                 if(imgID==trainImgID || in_reconstructed_images.count(imgID))
                 {
                     out_corresponds[imgID][featID]=int(out_structure.size())-1;
@@ -494,7 +492,6 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
     }
 
     MAP_POINT3D map_point3D;
-    MAP_EXTRINSIC map_extrinsic;
 
 
     //Correspondence between [ImageID,FeatureID] and 3D Point
@@ -510,26 +507,29 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
     //Scene Structure
     std::vector<cv::Point3d> structure;
     Reconstruct_Initial_Pair(initial_pair,in_K,R,T,vec_kpLocation1,vec_kpLocation2,initial_matches,in_tracks,
-            structure,out_rotations,out_translations,map_point3D,map_extrinsic,correspond_ImgID_FeatID_and_3DPt);
+            structure,out_rotations,out_translations,map_point3D,correspond_ImgID_FeatID_and_3DPt);
 
     //prepare for bundle adjustment
     cv::Mat intrinsic(cv::Matx41d(in_K.at<double>(0, 0), in_K.at<double>(1, 1), in_K.at<double>(0, 2), in_K.at<double>(1, 2)));
-    std::vector<cv::Mat> extrinsics;
-    for(std::map<int,cv::Mat>::size_type i=0;i<out_rotations.size();++i)
+    std::map<int,cv::Mat> extrinsics;
+    for(const auto & para:out_rotations)
     {
         cv::Mat extrinsic(6,1,CV_64FC1);
         cv::Mat rotation_compressed;
-        Rodrigues(out_rotations[i],rotation_compressed);
+
+        int img_id=para.first;
+
+        Rodrigues(para.second,rotation_compressed);
 
         rotation_compressed.copyTo(extrinsic.rowRange(0,3));
-        out_translations[i].copyTo(extrinsic.rowRange(3,6));
+        out_translations[img_id].copyTo(extrinsic.rowRange(3,6));
 
-        extrinsics.push_back(extrinsic);
+        extrinsics[img_id]=extrinsic;
     }
 
 
     //do bundle adjustment
-    BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,map_extrinsic,reconstructed_imgs);
+    BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs);
 
 
     remaining_images.erase(initial_pair.first);
@@ -555,23 +555,24 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
                 remaining_images,
                 reconstructured_track_ID,
                 colors,
-                map_point3D,
-                map_extrinsic);
+                map_point3D);
 
         //prepare for BA
-        for(std::map<int,cv::Mat>::size_type i=extrinsics.size();i<out_rotations.size();++i)
+        for(const auto & para:out_rotations)
         {
             cv::Mat extrinsic(6,1,CV_64FC1);
             cv::Mat rotation_compressed;
-            Rodrigues(out_rotations[i],rotation_compressed);
+            Rodrigues(para.second,rotation_compressed);
+
+            int img_id=para.first;
 
             rotation_compressed.copyTo(extrinsic.rowRange(0,3));
-            out_translations[i].copyTo(extrinsic.rowRange(3,6));
+            out_translations[img_id].copyTo(extrinsic.rowRange(3,6));
 
-            extrinsics.push_back(extrinsic);
+            extrinsics[img_id]=extrinsic;
         }
 
-        BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,map_extrinsic,reconstructed_imgs);
+        BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs);
     }
 
     //save to file
@@ -604,12 +605,12 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
     }
     fs << "]";
 
-//    fs << "Colors" << "[";
-//    for (size_t i = 0; i < colors.size(); ++i)
-//    {
-//        fs << colors[i];
-//    }
-//    fs << "]";
+    fs << "Colors" << "[";
+    for (size_t i = 0; i < colors.size(); ++i)
+    {
+        fs << colors[i];
+    }
+    fs << "]";
 
     fs.release();
 

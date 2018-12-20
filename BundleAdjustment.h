@@ -65,12 +65,11 @@ struct ReprojectionCost
 
 //do bundle adjustment for current scene
 void BundleAdjustment(cv::Mat & in_intrinsic,
-        std::vector<cv::Mat> & in_extrinsics,
+        std::map<int,cv::Mat> & in_extrinsics,
         MAP_POINT3D & in_map_point3d,
         MAP_TRACKS & in_all_tracks,
         MAP_KEYPOINTS & in_all_kps,
         std::vector<cv::Point3d> & in_structure,
-        MAP_EXTRINSIC & in_map_extrinsic,
         std::set<int> & in_reconstructed_imgs);
 
 #endif //INCREMENTAL_SFM_BUNDLEADJUSTMENT_H

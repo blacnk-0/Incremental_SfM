@@ -5,12 +5,11 @@
 #include "BundleAdjustment.h"
 
 void BundleAdjustment(cv::Mat & in_intrinsic,
-                      std::vector<cv::Mat> & in_extrinsics,
+                      std::map<int,cv::Mat> & in_extrinsics,
                       MAP_POINT3D & in_map_point3d,
                       MAP_TRACKS & in_all_tracks,
                       MAP_KEYPOINTS & in_all_kps,
                       std::vector<cv::Point3d> & in_structure,
-                      MAP_EXTRINSIC & in_map_extrinsic,
                       std::set<int> & in_reconstructed_imgs)
 {
     ceres::Problem problem;
@@ -37,7 +36,6 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
     {
         //get track ID and extrinsic id
         int track_id=in_map_point3d[i];
-        int extrinsic_id=in_map_extrinsic[i];
 
         MAP_TRACK track=in_all_tracks[track_id];
 
@@ -60,7 +58,7 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
 
             problem.AddResidualBlock(cost_function,huber_loss,
                     in_intrinsic.ptr<double>(),
-                    in_extrinsics[extrinsic_id].ptr<double>(),
+                    in_extrinsics[img_id].ptr<double>(),
                     &(in_structure[i].x));
         }
     }

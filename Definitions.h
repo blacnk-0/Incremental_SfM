@@ -54,7 +54,4 @@ using MAP_COLORS=std::map<int,MAP_COLOR>;
 //MAP <structure 3D Point Index,track ID>
 using MAP_POINT3D=std::map<int,int>;
 
-//MAP <structure 3D Point Index,extrinsic ID>
-using MAP_EXTRINSIC=std::map<int,int>;
-
 #endif //INCREMENTAL_SFM_DEFINITIONS_H
