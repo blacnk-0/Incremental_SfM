@@ -5,7 +5,7 @@
 #include "TrackHelper.h"
 
 
-void FindTrack_with_ImageID(const int & in_ImageID,const MAP_TRACKS & in_all_tracks,set<int> & out_trackID)
+void FindTrack_with_ImageID(const int & in_ImageID,const MAP_TRACKS & in_all_tracks,std::set<int> & out_trackID)
 {
     for(const auto & track:in_all_tracks)
     {
@@ -17,12 +17,12 @@ void FindTrack_with_ImageID(const int & in_ImageID,const MAP_TRACKS & in_all_tra
     }
 }
 
-void FindTrack_with_ImagePair(const pair<int,int> & in_imagePair,const MAP_TRACKS & in_all_tracks,set<int> & out_trackID)
+void FindTrack_with_ImagePair(const std::pair<int,int> & in_imagePair,const MAP_TRACKS & in_all_tracks,std::set<int> & out_trackID)
 {
     int I=in_imagePair.first;
     int J=in_imagePair.second;
 
-    set<int> tracks_I,tracks_J;
+    std::set<int> tracks_I,tracks_J;
     FindTrack_with_ImageID(I,in_all_tracks,tracks_I);
     FindTrack_with_ImageID(J,in_all_tracks,tracks_J);
 
@@ -32,7 +32,7 @@ void FindTrack_with_ImagePair(const pair<int,int> & in_imagePair,const MAP_TRACK
 //only find one possible track
 int FindTrack_with_ImageIDandFeatID(const int & in_imgID,const int & in_featID,const MAP_TRACKS & in_all_tracks)
 {
-    set<int> track_with_image;
+    std::set<int> track_with_image;
 
     bool res{false};
     int out_trackID{-1};

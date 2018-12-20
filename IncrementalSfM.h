@@ -21,28 +21,28 @@
 #define INCREMENTAL_SFM_INCREMENTALSFM_H
 
 //choose initial pair with most matches
-bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,pair<int,int> & out_ImageID);
+bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,std::pair<int,int> & out_ImageID);
 
 //Rescontruct Initial Pair
 //initial out_structure
 //initial out_rotation
 //initial out_translation
 void Reconstruct_Initial_Pair(
-        pair<int,int> & in_initialPair,
-        Mat & in_K,Mat & in_R,Mat & in_T, vector<Point2f> & in_p1,vector<Point2f> & in_p2,
+        std::pair<int,int> & in_initialPair,
+        cv::Mat & in_K,cv::Mat & in_R,cv::Mat & in_T, std::vector<cv::Point2f> & in_p1,std::vector<cv::Point2f> & in_p2,
         VEC_MATCHES & in_initial_matches,
         MAP_TRACKS & in_all_tracks,
-        vector<Point3f> & out_structure,
-        map<int,Mat> & out_rotations,
-        map<int,Mat> & out_translations,
+        std::vector<cv::Point3f> & out_structure,
+        std::map<int,cv::Mat> & out_rotations,
+        std::map<int,cv::Mat> & out_translations,
         MAP_POINT3D & out_point3d_correspondence,
         MAP_EXTRINSIC & out_extrinsic_correspondence);
 
 //First Camera [I|0] , Second Camera [R|T]
-bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &in_p2, Mat &out_R, Mat &out_T);
+bool Find_Transform_Initial(cv::Mat & in_K,std::vector<cv::Point2f> &in_p1, std::vector<cv::Point2f> &in_p2, cv::Mat &out_R, cv::Mat &out_T);
 
 //Find Next Image Prepare for Next Round Reconstruction
-bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID);
+bool Find_Next_Image(std::set<int> in_remaing_imageID,std::set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID);
 
 //Use Next Image to Update Scene
 //in_matches --  all matches
@@ -54,20 +54,20 @@ bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_tra
 //5.triangulate
 //6.update scene
 void Incremental_Process(
-        Mat & in_K,
+        cv::Mat & in_K,
         int in_ProcessImgID,
-        vector<int> & in_reconstructed_images,
+        std::vector<int> & in_reconstructed_images,
         const MAP_TRACKS & in_all_tracks,
         MAP_MATCHES & in_matches,
         MAP_KEYPOINTS & in_keypoints,
         MAP_COLORS & in_all_colors,
-        vector<vector<int>> & out_corresponds,
-        vector<Point3f> & out_structure,
-        map<int,Mat> & out_rotations,
-        map<int,Mat> & out_translations,
-        set<int> & out_remaining_images,
-        set<int> & out_recons_trackID,
-        vector<Vec3b> & out_colors,
+        std::vector<std::vector<int>> & out_corresponds,
+        std::vector<cv::Point3f> & out_structure,
+        std::map<int,cv::Mat> & out_rotations,
+        std::map<int,cv::Mat> & out_translations,
+        std::set<int> & out_remaining_images,
+        std::set<int> & out_recons_trackID,
+        std::vector<cv::Vec3b> & out_colors,
         MAP_POINT3D & out_point3d_correspondence,
         MAP_EXTRINSIC & out_extrinsic_correspondence);
 
@@ -80,11 +80,11 @@ void Incremental_Process(
 //4.reconsturctured_images -- ImageID
 //5.out_rotations -- Mat
 //6.out_translations -- Mat
-void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,
+void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,
         MAP_KEYPOINTS & in_keypoints,
         MAP_COLORS & in_colors,
-        map<int,Mat> out_rotations,
-        map<int,Mat> out_translations);
+        std::map<int,cv::Mat> out_rotations,
+        std::map<int,cv::Mat> out_translations);
 
 
 

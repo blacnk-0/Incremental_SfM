@@ -19,16 +19,15 @@
 #include "tinydir.h"
 
 
-using namespace std;
-using namespace cv;
+
 
 int main(int argc,char ** argv) {
 
 
-    string s_images_dir;
+    std::string s_images_dir;
     s_images_dir="/Users/xujun/CLionProjects/Incremental_SfM/Images";
 
-    vector<string> vec_files_name;
+    std::vector<std::string> vec_files_name;
     tinydir_dir dir;
     tinydir_open(&dir,s_images_dir.c_str());
 
@@ -45,167 +44,24 @@ int main(int argc,char ** argv) {
     tinydir_close(&dir);
 
     //Filter files
-    vector<string> vec_images_name;
+    std::vector<std::string> vec_images_name;
     for(const auto & file_name:vec_files_name)
     {
-        vector<string> file_name_after_split=split_by_character(file_name,'.');
+        std::vector<std::string> file_name_after_split=split_by_character(file_name,'.');
 
-        string s_ext_name=file_name_after_split.back();
+        std::string s_ext_name=file_name_after_split.back();
         if(s_ext_name=="jpg" || s_ext_name=="JPG" || s_ext_name=="jpeg" || s_ext_name=="png" )
         {
             vec_images_name.push_back(file_name);
         }
     }
 
-
-
-//
-//    int count1{1};
-//    int count2{4};
-//    double count1_div_count2=(double)count1/(double)count2;
-//    cout<<count1_div_count2<<endl;
-
-//    vector<int>::size_type s;
-//    int i=1;
-//    s=i;
-//    cout<<s<<endl;
-
-//    VEC_MATCHES ab,bc,ad,ac;
-//    //initial ab
-//    ab.push_back(make_pair(0,0));
-//    ab.push_back(make_pair(1,1));
-//    ab.push_back(make_pair(2,3));
-//    //initial bc
-//    bc.push_back(make_pair(0,0));
-//    bc.push_back(make_pair(1,6));
-//    bc.push_back(make_pair(3,2));
-//    bc.push_back(make_pair(3,8));
-//    bc.push_back(make_pair(5,6));
-//    //initial ad
-//    ad.push_back(make_pair(1,2));
-//    ad.push_back(make_pair(1,3));
-//    ad.push_back(make_pair(3,4));
-//    //initial ac
-//    ac.push_back(make_pair(1,5));
-//    ac.push_back(make_pair(2,7));
-//    ac.push_back(make_pair(5,9));
-//    ac.push_back(make_pair(3,7));
-//
-//    MAP_MATCHES map_matches;
-//    map_matches[make_pair(0,1)]=ab;
-//    map_matches[make_pair(1,2)]=bc;
-//    map_matches[make_pair(0,3)]=ad;
-//    map_matches[make_pair(0,2)]=ac;
-//
-//    pair<int,int> out_images_id;
-//    Choose_Initial_Pair(map_matches,out_images_id);
-//    cout<<"Choosen image pair:"<<out_images_id.first<<"  "<<out_images_id.second<<endl;
-
-
-//
-//    MAP_TRACKS map_tracks;
-//    UnionFind uf_tree;
-//    flat_pair_map<pair<int,int> ,int> map_node_to_index;
-//    Compute_Tracks(uf_tree,map_matches,map_node_to_index);
-//    Filter_Tracks(uf_tree,map_node_to_index,map_tracks);
-//
-//    for(const auto & iter:uf_tree.m_cc_size)
-//    {
-//        cout<<iter<<endl;
-//    }
-//
-//    cout<<endl;
-//    for(const auto & track:map_tracks)
-//    {
-//        cout<<"track "<<track.first<<" :"<<endl;
-//        for(const auto & node:track.second)
-//        {
-//            cout<<node.first<<"  "<<node.second<<endl;
-//        }
-//        cout<<endl;
-//    }
-//
-//
-//    MAP_TRACKS map_tracks1;
-//    MAP_TRACK track0,track1,track2;
-//    track0[3]=10,track0[1]=2,track0[2]=12; //track1
-//    track1[3]=1,track1[2]=5;               //track2
-//    track2[1]=34,track2[2]=17;             //track3
-//
-//    map_tracks1[0]=track0;
-//    map_tracks1[1]=track1;
-//    map_tracks1[2]=track2;
-//
-//    set<int> reconstructed_track_id;
-//    reconstructed_track_id.insert(0);
-//    reconstructed_track_id.insert(1);
-//
-//    set<int> remaining_image_id;
-//    remaining_image_id.insert(3);
-//    remaining_image_id.insert(1);
-//    remaining_image_id.insert(2);
-//
-//    int out_image;
-//    Find_Next_Image(remaining_image_id,reconstructed_track_id,map_tracks1,out_image);
-
-
-
-    //
-//    set<int> set_track_id;
-//    int id=FindTrack_with_ImageIDandFeatID(0,2,map_tracks1);
-//    cout<<id<<endl;
-
-
-
-    vector<KeyPoint> kps;
-    Mat desc;
-
-    string img0="/Users/xujun/CLionProjects/Incremental_SfM/Images/0.jpg";
-    string img1="/Users/xujun/CLionProjects/Incremental_SfM/Images/1.jpg";
-    string img2="/Users/xujun/CLionProjects/Incremental_SfM/Images/2.jpg";
-    string img3="/Users/xujun/CLionProjects/Incremental_SfM/Images/3.jpg";
-    string img4="/Users/xujun/CLionProjects/Incremental_SfM/Images/4.jpg";
-    string img5="/Users/xujun/CLionProjects/Incremental_SfM/Images/5.jpg";
-    string img6="/Users/xujun/CLionProjects/Incremental_SfM/Images/6.jpg";
-    string img7="/Users/xujun/CLionProjects/Incremental_SfM/Images/7.jpg";
-    string img8="/Users/xujun/CLionProjects/Incremental_SfM/Images/8.jpg";
-    string img9="/Users/xujun/CLionProjects/Incremental_SfM/Images/9.jpg";
-    string img10="/Users/xujun/CLionProjects/Incremental_SfM/Images/10.jpg";
-
-    string m1_p,m2_p;
-    m1_p=img8;
-    m2_p=img9;
-
-
-    vector<KeyPoint> m1_k,m2_k;
-    Mat m1_desc,m2_desc;
-    Compute_SIFT_Feature_Single(m2_p,m2_k,m2_desc);
-    cout<<m2_k.size()<<endl;
-    cout<<m2_desc.size()<<endl;
-
-    Compute_SIFT_Feature_Single(m1_p,m1_k,m1_desc);
-    cout<<m1_k.size()<<endl;
-    cout<<m1_desc.size()<<endl;
-
-
-//
-//    Mat m_img0,m_img1,m_img2;
-//    m_img0=imread(img0);
-//    m_img1=imread(img1);
-//    m_img2=imread(img2);
-
-
     MAP_IMGS images;
-    images[0]=img0;
-    images[1]=img1;
-    images[2]=img2;
-    images[3]=img3;
-    images[4]=img4;
 
     // 2881.252 ,    0     , 1416.0
     //    0     , 2881.252 , 1064.0
     //    0     ,    0     ,   1
-    Mat K(Matx33d(
+    cv::Mat K(cv::Matx33d(
             2881.252 , 0 , 1416.0 ,
             0 , 2881.252 , 1064.0 ,
             0 , 0 , 1
@@ -213,125 +69,37 @@ int main(int argc,char ** argv) {
 
     MAP_MATCHES out;
     MAP_DESCS map_descs;
-    map_descs[0]=m1_desc;
-    map_descs[1]=m2_desc;
-
-    MAP_KEYPOINT map_keypoint1,map_keypoint2;
-    int count{0};
-    for(const auto & kp:m1_k)
-    {
-        map_keypoint1[count]=kp;
-        ++count;
-    }
-
-    count=0;
-    for(const auto & kp:m2_k)
-    {
-        map_keypoint2[count]=kp;
-        ++count;
-    }
-
     MAP_KEYPOINTS map_keypoints;
-    map_keypoints[0]=map_keypoint1;
-    map_keypoints[9]=map_keypoint2;
+
     Compute_Matches_All(K,map_descs,map_keypoints,out);
 
-    cout<<"out size:"<<out.size()<<endl;
+    std::cout<<"out size:"<<out.size()<<std::endl;
     for(const auto matches:out)
     {
-        cout<<matches.second.size()<<endl;
+        std::cout<<matches.second.size()<<std::endl;
     }
 
 
-//    MAP_IMGS valid_images;
-//    MAP_KEYPOINTS all_kps;
-//    MAP_DESCS all_descs;
-//
-//    MAP_MATCHES map_matches;
-//    MAP_COLORS map_colors;
-//
-//    Compute_SIFT_Features_All_Colors(images,valid_images,all_kps,all_descs,map_colors);
-//
-//    Compute_Matches_All(K,all_descs,all_kps,map_matches);
-//
-//    vector<KeyPoint> kps_one,kps_two;
-//    for(const auto & iter:all_kps[0])
-//    {
-//        kps_one.push_back(iter.second);
-//    }
-//
-//    for(const auto & iter:all_kps[1])
-//    {
-//        kps_two.push_back(iter.second);
-//    }
-//
-//
-//    UnionFind uf_tree;
-//    flat_pair_map<pair<int,int>,int> map_node_to_index;
-//    MAP_TRACKS map_tracks;
-//    Compute_Tracks(uf_tree,map_matches,map_node_to_index);
-//    Filter_Tracks(uf_tree,map_node_to_index,map_tracks);
-//
-//    map<int,Mat> out_rotation,out_translation;
-//    Main_SfM(K,valid_images,map_tracks,map_matches,all_kps,map_colors,out_rotation,out_translation);
+    MAP_IMGS valid_images;
+    MAP_KEYPOINTS all_kps;
+    MAP_DESCS all_descs;
+
+    MAP_MATCHES map_matches;
+    MAP_COLORS map_colors;
+
+    Compute_SIFT_Features_All_Colors(images,valid_images,all_kps,all_descs,map_colors);
+
+    Compute_Matches_All(K,all_descs,all_kps,map_matches);
 
 
-//    cout<<all_kps.size()<<endl;
-//
-//    Mat gd_image=imread(img1);
-//    Ptr<Feature2D> sift_detector=xfeatures2d::SIFT::create();
-//
-//    vector<KeyPoint> gd_kps;
-//    Mat gd_desc;
-//    sift_detector->detectAndCompute(gd_image,noArray(),gd_kps,gd_desc);
-//
-//    vector<KeyPoint> test_kps;
-//    Mat test_desc=all_descs[2];
-//    for(const auto & iter:all_kps[2])
-//    {
-//        test_kps.push_back(iter.second);
-//    }
-//
-//    vector<DMatch> match;
-//    Compute_Matches_Single(test_desc,gd_desc,match);
-//
-//    Mat imgMatch;
-//    drawMatches(m_img1,test_kps,m_img1,gd_kps,match,imgMatch);
-//    imshow("o",imgMatch);
-//    waitKey();
+    UnionFind uf_tree;
+    flat_pair_map<std::pair<int,int>,int> map_node_to_index;
+    MAP_TRACKS map_tracks;
+    Compute_Tracks(uf_tree,map_matches,map_node_to_index);
+    Filter_Tracks(uf_tree,map_node_to_index,map_tracks);
 
-
-//    string img0="/Users/xujun/CLionProjects/Incremental_SfM/Images/0.jpg";
-//    string img1="/Users/xujun/CLionProjects/Incremental_SfM/Images/1.jpg";
-//
-//    Mat image=imread(img0);
-//    Mat image1=imread(img1);
-//    Ptr<Feature2D> sift_detector = xfeatures2d::SIFT::create();
-//
-//    vector<KeyPoint> kps,kps1;
-//    Mat descs,desc1;
-//    sift_detector->detectAndCompute(image,noArray(),kps,descs);
-//    sift_detector->detectAndCompute(image1,noArray(),kps1,desc1);
-//
-//    vector<vector<DMatch>> knn_matches;
-//    BFMatcher matcher(NORM_L2);
-//
-//    Mat d1=desc1.row(0);
-//    Mat d2=descs.row(32820);
-//
-//    cout<<d1<<endl;
-//    cout<<d2<<endl;
-//
-//    cout<<desc1.size()<<"  "<<descs.size()<<endl;
-//    cout<<d1.size()<<"  "<<d2.size()<<endl;
-//
-//    cout<<kps1.size()<<endl;
-//    cout<<kps.size()<<endl;
-//
-//
-//    matcher.knnMatch(desc1,descs,knn_matches,2);
-
-
+    std::map<int,cv::Mat> out_rotation,out_translation;
+    Main_SfM(K,valid_images,map_tracks,map_matches,all_kps,map_colors,out_rotation,out_translation);
 
 
     return 0;

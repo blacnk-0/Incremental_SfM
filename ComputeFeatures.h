@@ -11,15 +11,11 @@
 
 #include "Definitions.h"
 
-using namespace cv;
-using namespace std;
-
-
 
 #ifndef INCREMENTAL_SFM_COMPUTEFEATURES_H
 #define INCREMENTAL_SFM_COMPUTEFEATURES_H
 
-void Compute_SIFT_Feature_Single(const string & in_sImgPath,vector<KeyPoint> & out_KeyPoints,MAT_DESC & out_Descs);
+void Compute_SIFT_Feature_Single(const std::string & in_sImgPath,std::vector<cv::KeyPoint> & out_KeyPoints,MAT_DESC & out_Descs);
 
 
 void Compute_SIFT_Features_All(const MAP_IMGS & in_images,
@@ -28,7 +24,7 @@ void Compute_SIFT_Features_All(const MAP_IMGS & in_images,
         MAP_DESCS & out_all_descs);
 
 //Extented, record colors
-void Compute_SIFT_Feature_Single_Color(const string & in_sImgPath,vector<KeyPoint> & out_KeyPoints,MAT_DESC & out_Descs,
+void Compute_SIFT_Feature_Single_Color(const std::string & in_sImgPath,std::vector<cv::KeyPoint> & out_KeyPoints,MAT_DESC & out_Descs,
         MAP_COLOR & out_color);
 
 //Extended, record colors
@@ -39,7 +35,7 @@ void Compute_SIFT_Features_All_Colors(const MAP_IMGS & in_images,
                                MAP_COLORS & out_colors);
 
 
-void Convert_MapKps_to_VecKps(const MAP_KEYPOINT & in_MapKps,vector<KeyPoint> out_kps);
+void Convert_MapKps_to_VecKps(const MAP_KEYPOINT & in_MapKps,std::vector<cv::KeyPoint> out_kps);
 
 
 #endif //INCREMENTAL_SFM_COMPUTEFEATURES_H

@@ -71,6 +71,6 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
         MAP_KEYPOINTS & in_all_kps,
         std::vector<cv::Point3d> & in_structure,
         MAP_EXTRINSIC & in_map_extrinsic,
-        set<int> & in_reconstructed_imgs);
+        std::set<int> & in_reconstructed_imgs);
 
 #endif //INCREMENTAL_SFM_BUNDLEADJUSTMENT_H

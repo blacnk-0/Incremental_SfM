@@ -11,7 +11,7 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
                       MAP_KEYPOINTS & in_all_kps,
                       std::vector<cv::Point3d> & in_structure,
                       MAP_EXTRINSIC & in_map_extrinsic,
-                      set<int> & in_reconstructed_imgs)
+                      std::set<int> & in_reconstructed_imgs)
 {
     ceres::Problem problem;
 
@@ -53,7 +53,7 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
             }
 
             //observed feature point in image
-            Point2d observed=in_all_kps[img_id][feat_id].pt;
+            cv::Point2d observed=in_all_kps[img_id][feat_id].pt;
 
             //Initial reprojection cost function
             ceres::CostFunction *cost_function=new ceres::AutoDiffCostFunction<ReprojectionCost,2,4,6,3>(new ReprojectionCost(observed));
@@ -80,7 +80,7 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
 
     if(!BA_Summary.IsSolutionUsable())
     {
-        cout<<"Bundle Adjustment Failed in"<<in_extrinsics.size()<<" Round\n";
+        std::cout<<"Bundle Adjustment Failed in"<<in_extrinsics.size()<<" Round\n";
     } else{
         std::cout << std::endl
                   <<"Rount "<<in_extrinsics.size()

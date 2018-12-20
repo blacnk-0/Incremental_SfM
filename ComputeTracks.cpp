@@ -4,12 +4,12 @@
 
 #include "ComputeTracks.h"
 
-void Compute_Tracks(UnionFind &uf_tree, MAP_MATCHES & in_MapMatches,flat_pair_map<pair<int,int>,int> & out_map_node_to_index)
+void Compute_Tracks(UnionFind &uf_tree, MAP_MATCHES & in_MapMatches,flat_pair_map<std::pair<int,int>,int> & out_map_node_to_index)
 {
     //ImgID,FeatId
     //as a node to compute track
-    using NODE=pair<int,int>;
-    set< NODE > all_feats_to_node;
+    using NODE=std::pair<int,int>;
+    std::set< NODE > all_feats_to_node;
 
     for(const auto &  match:in_MapMatches)
     {
@@ -58,13 +58,13 @@ void Compute_Tracks(UnionFind &uf_tree, MAP_MATCHES & in_MapMatches,flat_pair_ma
 
 //Remove tracks with more than one feature in one image
 //Remove tracks if too short
-void Filter_Tracks(UnionFind & in_ufTree,flat_pair_map<pair<int,int>,int> & in_map_node_to_index,MAP_TRACKS & out_tracks)
+void Filter_Tracks(UnionFind & in_ufTree,flat_pair_map<std::pair<int,int>,int> & in_map_node_to_index,MAP_TRACKS & out_tracks)
 {
     //{trackID, {ImageID}} as a track
-    map<int, set<int>> tracks;
+    std::map<int, std::set<int>> tracks;
 
     //tracks ID that has problem
-    set<int> problem_tracks;
+    std::set<int> problem_tracks;
 
 
     //filter tracks with more than one feature in the same image

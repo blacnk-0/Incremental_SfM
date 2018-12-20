@@ -8,10 +8,10 @@
 
 
 //choose initial pair with most matches
-bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,pair<int,int> & out_ImageID)
+bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,std::pair<int,int> & out_ImageID)
 {
-    vector<pair<int  , int >>::size_type max{0};
-    pair<int,int> p_ImagePair;
+    std::vector<std::pair<int  , int >>::size_type max{0};
+    std::pair<int,int> p_ImagePair;
 
     for(const auto & elem:in_map_matches)
     {
@@ -36,53 +36,53 @@ bool Choose_Initial_Pair(const MAP_MATCHES & in_map_matches,pair<int,int> & out_
 //initial out_rotation
 //initial out_translation
 void Reconstruct_Initial_Pair(
-        pair<int,int> & in_initialPair,
-        Mat & in_K,Mat & in_R,Mat & in_T, vector<Point2f> & in_p1,vector<Point2f> & in_p2,
+        std::pair<int,int> & in_initialPair,
+        cv::Mat & in_K,cv::Mat & in_R,cv::Mat & in_T, std::vector<cv::Point2f> & in_p1,std::vector<cv::Point2f> & in_p2,
         VEC_MATCHES & in_initial_matches,
         MAP_TRACKS & in_all_tracks,
-        vector<Point3d> & out_structure,
-        map<int,Mat> & out_rotations,
-        map<int,Mat> & out_translations,
+        std::vector<cv::Point3d> & out_structure,
+        std::map<int,cv::Mat> & out_rotations,
+        std::map<int,cv::Mat> & out_translations,
         MAP_POINT3D & out_point3d_correspondence,
         MAP_EXTRINSIC & out_extrinsic_correspondence)
 {
     //Projection Matrix [R|T] of the initial two cameras
-    Mat projection1(3,4,CV_32FC1);
-    Mat projection2(3,4,CV_32FC1);
+    cv::Mat projection1(3,4,CV_32FC1);
+    cv::Mat projection2(3,4,CV_32FC1);
 
 
     //first camera pose [I|0]
-    projection1(Range(0,3),Range(0,3))=Mat::eye(3,3,CV_32FC1);
-    projection1.col(3)=Mat::zeros(3,1,CV_32FC1);
+    projection1(cv::Range(0,3),cv::Range(0,3))=cv::Mat::eye(3,3,CV_32FC1);
+    projection1.col(3)=cv::Mat::zeros(3,1,CV_32FC1);
 
-    in_R.convertTo(projection2(Range(0,3),Range(0,3)),CV_32FC1);
+    in_R.convertTo(projection2(cv::Range(0,3),cv::Range(0,3)),CV_32FC1);
     in_T.convertTo(projection2.col(3),CV_32FC1);
 
-    Mat R0=Mat::eye(3,3,CV_64FC1);
-    Mat T0=Mat::zeros(3,1,CV_64FC1);
+    cv::Mat R0=cv::Mat::eye(3,3,CV_64FC1);
+    cv::Mat T0=cv::Mat::zeros(3,1,CV_64FC1);
 
     //store [ImageID, Matrix ]
-    pair<int,Mat> R0_pair=make_pair(in_initialPair.first,R0);
-    pair<int,Mat> T0_pair=make_pair(in_initialPair.first,T0);
-    pair<int,Mat> R1_pair=make_pair(in_initialPair.second,in_R);
-    pair<int,Mat> T1_pair=make_pair(in_initialPair.second,in_T);
+    std::pair<int,cv::Mat> R0_pair=std::make_pair(in_initialPair.first,R0);
+    std::pair<int,cv::Mat> T0_pair=std::make_pair(in_initialPair.first,T0);
+    std::pair<int,cv::Mat> R1_pair=std::make_pair(in_initialPair.second,in_R);
+    std::pair<int,cv::Mat> T1_pair=std::make_pair(in_initialPair.second,in_T);
 
     //Initial out_rotation and out_translation
     out_rotations={R0_pair,R1_pair};
     out_translations={T0_pair,T1_pair};
 
-    Mat intrinsic;
+    cv::Mat intrinsic;
     in_K.convertTo(intrinsic,CV_32FC1);
 
     projection1=intrinsic*projection1;
     projection2=intrinsic*projection2;
 
-    Mat mat_structure;
+    cv::Mat mat_structure;
     triangulatePoints(projection1,projection2,in_p1,in_p2,mat_structure);
 
     out_structure.clear();
     //Safe to convert ,mat_structure.cols is always positive
-    vector<Point3f>::size_type mat_structure_cols_size=mat_structure.cols;
+    std::vector<cv::Point3f>::size_type mat_structure_cols_size=mat_structure.cols;
     out_structure.reserve(mat_structure_cols_size);
 
     int first_image=in_initialPair.first;
@@ -103,20 +103,20 @@ void Reconstruct_Initial_Pair(
         int trackID=FindTrack_with_ImageIDandFeatID(first_image,in_initial_matches[i].first,in_all_tracks);
         out_point3d_correspondence[count]=trackID;
         out_extrinsic_correspondence[count]=out_rotations.size()-1;
-        Mat_<float> col=mat_structure.col(i);
+        cv::Mat_<float> col=mat_structure.col(i);
         col/=col(3);
-        out_structure.push_back(Point3f(col(0),col(1),col(2)));
+        out_structure.push_back(cv::Point3f(col(0),col(1),col(2)));
         ++count;
     }
 }
 
 //First Camera [I|0] , Second Camera [R|T]
-bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &in_p2, Mat &out_R, Mat &out_T) {
+bool Find_Transform_Initial(cv::Mat & in_K,std::vector<cv::Point2f> &in_p1, std::vector<cv::Point2f> &in_p2, cv::Mat &out_R, cv::Mat &out_T) {
     double focal_length = 0.5 * (in_K.at<double>(0) + in_K.at<double>(4));
-    Point2f principle_point(in_K.at<double>(2), in_K.at<double>(5));
+    cv::Point2f principle_point(in_K.at<double>(2), in_K.at<double>(5));
 
-    Mat mask;
-    Mat E = findEssentialMat(in_p1, in_p2, focal_length, principle_point, RANSAC, 0.999, 1.0, mask);
+    cv::Mat mask;
+    cv::Mat E = findEssentialMat(in_p1, in_p2, focal_length, principle_point, cv::RANSAC, 0.999, 1.0, mask);
 
     int count1 = countNonZero(mask);
     int count2 = recoverPose(E, in_p1, in_p2, out_R, out_T, focal_length, principle_point, mask);
@@ -132,17 +132,17 @@ bool Find_Transform_Initial(Mat & in_K,vector<Point2f> &in_p1, vector<Point2f> &
 //Find Next Image Prepare for Next Round Reconstruction
 //Select image has largest common tracks with current reconstructed tracks
 //If there are multi image with the same number of common tracks, this function choose the smallest image id
-bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID)
+bool Find_Next_Image(std::set<int> in_remaing_imageID,std::set<int> in_reconstructured_track_ID,MAP_TRACKS in_all_tracks,int & out_next_imageID)
 {
-    set<int>::size_type d_max{0};
+    std::set<int>::size_type d_max{0};
     int d_imageID{-1};
 
     for(const int & imageID:in_remaing_imageID)
     {
-        set<int> tracks_with_imageID;
+        std::set<int> tracks_with_imageID;
         FindTrack_with_ImageID(imageID,in_all_tracks,tracks_with_imageID);
 
-        set<int> intersection;
+        std::set<int> intersection;
         std::set_intersection(in_reconstructured_track_ID.begin(),in_reconstructured_track_ID.end(),
                               tracks_with_imageID.begin(),tracks_with_imageID.end(),std::inserter(intersection,intersection.begin()));
 
@@ -172,25 +172,25 @@ bool Find_Next_Image(set<int> in_remaing_imageID,set<int> in_reconstructured_tra
 //5.triangulate
 //6.update scene
 void Incremental_Process(
-        Mat & in_K,
+        cv::Mat & in_K,
         int in_ProcessImgID,
-        set<int> & in_reconstructed_images,
+        std::set<int> & in_reconstructed_images,
         MAP_TRACKS & in_all_tracks,
         MAP_MATCHES & in_matches,
         MAP_KEYPOINTS & in_keypoints,
         MAP_COLORS & in_all_colors,
-        vector<vector<int>> & out_corresponds,
-        vector<Point3d> & out_structure,
-        map<int,Mat> & out_rotations,
-        map<int,Mat> & out_translations,
-        set<int> & out_remaining_images,
-        set<int> & out_recons_trackID,
-        vector<Vec3b> & out_colors,
+        std::vector<std::vector<int>> & out_corresponds,
+        std::vector<cv::Point3d> & out_structure,
+        std::map<int,cv::Mat> & out_rotations,
+        std::map<int,cv::Mat> & out_translations,
+        std::set<int> & out_remaining_images,
+        std::set<int> & out_recons_trackID,
+        std::vector<cv::Vec3b> & out_colors,
         MAP_POINT3D & out_point3d_correspondence,
         MAP_EXTRINSIC & out_extrinsic_correspondence)
 {
     //Find reconstructed image matches best with current process image
-    pair<int,int> best_match_pair(-1,-1);
+    std::pair<int,int> best_match_pair(-1,-1);
     VEC_MATCHES::size_type d_matchNumbers{0};
 //    for(vector<int>::size_type i=0;i<in_reconstructed_images.size();++i)
       for(const auto & current_imageID:in_reconstructed_images)
@@ -199,7 +199,7 @@ void Incremental_Process(
           int I = std::min(in_ProcessImgID, current_imageID);
           int J = std::max(in_ProcessImgID, current_imageID);
           //ensure current_pair I < J
-          pair<int, int> current_pair(I, J);
+          std::pair<int, int> current_pair(I, J);
           const auto &matches = in_matches[current_pair];
           if (matches.size() > d_matchNumbers) {
               d_matchNumbers = matches.size();
@@ -210,8 +210,8 @@ void Incremental_Process(
     //Get Feature Points and Correspondence 3D Points
     //to solve PnP Problem
     VEC_MATCHES vec_matches=in_matches[best_match_pair];
-    vector<Point3f> points_3D;
-    vector<Point2f> featurePoints;
+    std::vector<cv::Point3f> points_3D;
+    std::vector<cv::Point2f> featurePoints;
     //if 2D-3D correspondences is too little, may have problem to solve PnP Problem
     //if this happens, 2D-3D correspondences should get from all reconstructured images, use FindTrack_with_ImagePair
     //or brute force
@@ -250,14 +250,14 @@ void Incremental_Process(
     //for test
     if(points_3D.size()<30)
     {
-        cout<<"Not enough points to solve PnP problems.\n";
+        std::cout<<"Not enough points to solve PnP problems.\n";
     }
 
 
     //may set a thresholf for the size of points_3D
-    Mat array_R;
-    Mat mat_R,mat_T;
-    solvePnPRansac(points_3D,featurePoints,in_K,noArray(),array_R,mat_T);
+    cv::Mat array_R;
+    cv::Mat mat_R,mat_T;
+    solvePnPRansac(points_3D,featurePoints,in_K,cv::noArray(),array_R,mat_T);
 
     Rodrigues(array_R,mat_R);
 
@@ -266,7 +266,7 @@ void Incremental_Process(
 
     //find feature correspondence to triangulate
     //p1 is in_Process feat point
-    vector<Point2f> p1,p2;
+    std::vector<cv::Point2f> p1,p2;
     for(VEC_MATCHES::size_type i=0;i<vec_matches.size();++i)
     {
         if(best_match_pair.first==in_ProcessImgID)
@@ -285,12 +285,12 @@ void Incremental_Process(
     }
 
     //projection1 is in_processing
-    vector<Point3f> new_structure;
-    Mat mat_new_structure;
-    Mat projection1(3,4,CV_32FC1);
-    Mat projection2(3,4,CV_32FC1);
+    std::vector<cv::Point3f> new_structure;
+    cv::Mat mat_new_structure;
+    cv::Mat projection1(3,4,CV_32FC1);
+    cv::Mat projection2(3,4,CV_32FC1);
 
-    mat_R.convertTo(projection1(Range(0, 3), Range(0, 3)), CV_32FC1);
+    mat_R.convertTo(projection1(cv::Range(0, 3), cv::Range(0, 3)), CV_32FC1);
     mat_T.convertTo(projection1.col(3), CV_32FC1);
 
     int anotherImageID{0};
@@ -301,14 +301,14 @@ void Incremental_Process(
         anotherImageID=best_match_pair.first;
     }
 
-    Mat anotherR,anotherT;
+    cv::Mat anotherR,anotherT;
     anotherR=out_rotations[anotherImageID];
     anotherT=out_translations[anotherImageID];
 
-    anotherR.convertTo(projection2(Range(0, 3), Range(0, 3)), CV_32FC1);
+    anotherR.convertTo(projection2(cv::Range(0, 3), cv::Range(0, 3)), CV_32FC1);
     anotherT.convertTo(projection2.col(3), CV_32FC1);
 
-    Mat intrinsic;
+    cv::Mat intrinsic;
     in_K.convertTo(intrinsic,CV_32FC1);
 
     //multiply intrinsic matrix
@@ -320,9 +320,9 @@ void Incremental_Process(
     //convert mat structure to vector<Point3f>
     for(int i=0;i<mat_new_structure.cols;++i)
     {
-        Mat_<float> col = mat_new_structure.col(i);
+        cv::Mat_<float> col = mat_new_structure.col(i);
         col /= col(3);
-        new_structure.push_back(Point3f(col(0), col(1), col(2)));
+        new_structure.push_back(cv::Point3f(col(0), col(1), col(2)));
     }
 
     //update reconstructed images ,remaining images
@@ -362,7 +362,7 @@ void Incremental_Process(
             //for test
             if(new_trackID==-1)
             {
-                cout<<"Missing hit in FindTrack_with_ImageIDandFeatID in Incremental_Process, unstable match found"<<endl;
+                std::cout<<"Missing hit in FindTrack_with_ImageIDandFeatID in Incremental_Process, unstable match found"<<std::endl;
                 continue;
             }
             out_recons_trackID.emplace(new_trackID);
@@ -420,25 +420,25 @@ void Incremental_Process(
 //4.reconsturctured_images -- ImageID
 //5.out_rotations -- Mat
 //6.out_translations -- Mat
-void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,
+void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES & in_matches,
         MAP_KEYPOINTS & in_keypoints,
               MAP_COLORS & in_colors,
-              map<int,Mat> out_rotations,
-              map<int,Mat> out_translations)
+              std::map<int,cv::Mat> out_rotations,
+              std::map<int,cv::Mat> out_translations)
 {
 
-    set<int> remaining_images;
+    std::set<int> remaining_images;
     for(const auto & img:in_images)
     {
         remaining_images.emplace(img.first);
     }
 
 
-    pair<int,int> initial_pair;
+    std::pair<int,int> initial_pair;
     //return initial_pair which I < J
     if(!Choose_Initial_Pair(in_matches,initial_pair))
     {
-        cout<<"Choose Initial Pair Failed\n";
+        std::cout<<"Choose Initial Pair Failed\n";
         return;
     }
 
@@ -451,20 +451,20 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
         initial_pair.second=pair_first;
     }
 
-    set<int> reconstructed_imgs;
+    std::set<int> reconstructed_imgs;
     reconstructed_imgs.emplace(initial_pair.first);
     reconstructed_imgs.emplace(initial_pair.second);
 
     //initial pair matches
     //make sure initial_pair first < second
     VEC_MATCHES initial_matches=in_matches[initial_pair];
-    vector<Point2f> vec_kpLocation1;
-    vector<Point2f> vec_kpLocation2;
-    vector<Vec3b> colors;
+    std::vector<cv::Point2f> vec_kpLocation1;
+    std::vector<cv::Point2f> vec_kpLocation2;
+    std::vector<cv::Vec3b> colors;
 
     if(initial_matches.empty())
     {
-        cout<<"Initial_matches empty\n";
+        std::cout<<"Initial_matches empty\n";
         return;
     }
 
@@ -479,11 +479,11 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
         colors.push_back(in_colors[I][_i]);
     }
 
-    Mat R;
-    Mat T;
+    cv::Mat R;
+    cv::Mat T;
     if(!Find_Transform_Initial(in_K,vec_kpLocation1,vec_kpLocation2,R,T))
     {
-        cout<<"FInd Transform with initial pair Failed\n";
+        std::cout<<"FInd Transform with initial pair Failed\n";
         return;
     }
 
@@ -492,17 +492,17 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
 
 
     //Scene Structure
-    vector<Point3d> structure;
+    std::vector<cv::Point3d> structure;
     Reconstruct_Initial_Pair(initial_pair,in_K,R,T,vec_kpLocation1,vec_kpLocation2,initial_matches,in_tracks,
             structure,out_rotations,out_translations,map_point3D,map_extrinsic);
 
     //prepare for bundle adjustment
-    Mat intrinsic(Matx41d(in_K.at<double>(0, 0), in_K.at<double>(1, 1), in_K.at<double>(0, 2), in_K.at<double>(1, 2)));
-    vector<Mat> extrinsics;
-    for(map<int,Mat>::size_type i=0;i<out_rotations.size();++i)
+    cv::Mat intrinsic(cv::Matx41d(in_K.at<double>(0, 0), in_K.at<double>(1, 1), in_K.at<double>(0, 2), in_K.at<double>(1, 2)));
+    std::vector<cv::Mat> extrinsics;
+    for(std::map<int,cv::Mat>::size_type i=0;i<out_rotations.size();++i)
     {
-        Mat extrinsic(6,1,CV_64FC1);
-        Mat rotation_compressed;
+        cv::Mat extrinsic(6,1,CV_64FC1);
+        cv::Mat rotation_compressed;
         Rodrigues(out_rotations[i],rotation_compressed);
 
         rotation_compressed.copyTo(extrinsic.rowRange(0,3));
@@ -516,10 +516,10 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
     BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,map_extrinsic,reconstructed_imgs);
 
     //Correspondence between [ImageID,FeatureID] and 3D Point
-    vector<vector<int>> correspond_ImgID_FeatID_and_3DPt;
+    std::vector<std::vector<int>> correspond_ImgID_FeatID_and_3DPt;
     //Initialize
     correspond_ImgID_FeatID_and_3DPt.resize(in_images.size());
-    for(vector<vector<int>>::size_type i=0;i<correspond_ImgID_FeatID_and_3DPt.size();++i)
+    for(std::vector<std::vector<int>>::size_type i=0;i<correspond_ImgID_FeatID_and_3DPt.size();++i)
     {
         //initialize to -1 which means no correspondence
         correspond_ImgID_FeatID_and_3DPt[i].resize(in_keypoints[i].size(),-1);
@@ -541,7 +541,7 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
     remaining_images.erase(initial_pair.first);
     remaining_images.erase(initial_pair.second);
 
-    set<int> reconstructured_track_ID;
+    std::set<int> reconstructured_track_ID;
     FindTrack_with_ImagePair(initial_pair,in_tracks,reconstructured_track_ID);
 
     int d_NextImageID{-1};
@@ -565,10 +565,10 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
                 map_extrinsic);
 
         //prepare for BA
-        for(map<int,Mat>::size_type i=extrinsics.size();i<out_rotations.size();++i)
+        for(std::map<int,cv::Mat>::size_type i=extrinsics.size();i<out_rotations.size();++i)
         {
-            Mat extrinsic(6,1,CV_64FC1);
-            Mat rotation_compressed;
+            cv::Mat extrinsic(6,1,CV_64FC1);
+            cv::Mat rotation_compressed;
             Rodrigues(out_rotations[i],rotation_compressed);
 
             rotation_compressed.copyTo(extrinsic.rowRange(0,3));
@@ -585,7 +585,7 @@ void Main_SfM(Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MATCHES
 
 
     //write to yml file
-    FileStorage fs("structure.yml", FileStorage::WRITE);
+    cv::FileStorage fs("structure.yml", cv::FileStorage::WRITE);
     fs << "Camera Count" << n;
     fs << "Point Count" << (int)structure.size();
 
