@@ -40,9 +40,10 @@ int FindTrack_with_ImageIDandFeatID(const int & in_imgID,const int & in_featID,c
     {
         if(track.second.count(in_imgID)!=0)
         {
+            //can be simplified
             for(const auto & node : track.second)
             {
-                if(node.second==in_featID)
+                if(node.first==in_imgID && node.second==in_featID)
                 {
                     out_trackID=track.first;
                     res=true;

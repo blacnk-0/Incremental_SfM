@@ -82,7 +82,7 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
     } else{
         std::cout << std::endl
                   <<"Rount "<<in_extrinsics.size()
-                  <<"Bundle Adjustment statistics (approximated RMSE):\n"
+                  <<" Bundle Adjustment statistics (approximated RMSE):\n"
                   <<"#views: " << in_extrinsics.size() << "\n"
                   <<"#residuals: " << BA_Summary.num_residuals << "\n"
                   <<"Initial RMSE: " << std::sqrt(BA_Summary.initial_cost / BA_Summary.num_residuals) << "\n"

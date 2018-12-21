@@ -44,7 +44,9 @@ void Reconstruct_Initial_Pair(
         std::map<int,cv::Mat> & out_rotations,
         std::map<int,cv::Mat> & out_translations,
         MAP_POINT3D & out_point3d_correspondence,
-        std::vector<std::vector<int>> & out_correspond_ImgID_FeatID_and_3DPt)
+        std::vector<std::vector<int>> & out_correspond_ImgID_FeatID_and_3DPt,
+        std::vector<cv::Vec3b> & out_colors,
+        MAP_COLORS & in_all_colors)
 {
     //Projection Matrix [R|T] of the initial two cameras
     cv::Mat projection1(3,4,CV_32FC1);
@@ -92,7 +94,7 @@ void Reconstruct_Initial_Pair(
     //Safe to use int, mat_structure.cols is type int
     //initial structure and [Point3D,TrackID] correspondence
     //count is the id of 3D point
-    MAP_POINT3D ::size_type count{out_point3d_correspondence.size()}; //always initial count like this
+    MAP_POINT3D ::size_type count{out_point3d_correspondence.size()}; //always initial count like this (0)
     for(int i=0;i<mat_structure.cols;++i)
     {
         //Only feature in track can do bundle adjustment
@@ -107,6 +109,8 @@ void Reconstruct_Initial_Pair(
 
         out_correspond_ImgID_FeatID_and_3DPt[first_image][in_initial_matches[i].first]=count;
         out_correspond_ImgID_FeatID_and_3DPt[second_image][in_initial_matches[i].second]=count;
+
+        out_colors.push_back(in_all_colors[first_image][in_initial_matches[i].first]);
 
         cv::Mat_<float> col=mat_structure.col(i);
         col/=col(3);
@@ -474,6 +478,7 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
 
     for(const auto & feat_pair:initial_matches)
     {
+
         int I=initial_pair.first;
         int J=initial_pair.second;
         int _i=feat_pair.first;
@@ -507,7 +512,7 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
     //Scene Structure
     std::vector<cv::Point3d> structure;
     Reconstruct_Initial_Pair(initial_pair,in_K,R,T,vec_kpLocation1,vec_kpLocation2,initial_matches,in_tracks,
-            structure,out_rotations,out_translations,map_point3D,correspond_ImgID_FeatID_and_3DPt);
+            structure,out_rotations,out_translations,map_point3D,correspond_ImgID_FeatID_and_3DPt,colors,in_colors);
 
     //prepare for bundle adjustment
     cv::Mat intrinsic(cv::Matx41d(in_K.at<double>(0, 0), in_K.at<double>(1, 1), in_K.at<double>(0, 2), in_K.at<double>(1, 2)));
