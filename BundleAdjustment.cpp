@@ -94,3 +94,36 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
 
 }
 
+void Update_Intrinsic_Extrinsic(std::map<int,cv::Mat> & in_extrinsics_map,
+                                cv::Mat & in_intrinsic_Mat,
+                                cv::Mat & out_K,
+                                std::map<int,cv::Mat> & out_rotations_map,
+                                std::map<int,cv::Mat> & out_translations_map)
+{
+    //update fx , fy , cx , cy
+    out_K.at<double>(0,0)=in_intrinsic_Mat.at<double>(0,0);
+    out_K.at<double>(1,1)=in_intrinsic_Mat.at<double>(1,0);
+    out_K.at<double>(0,2)=in_intrinsic_Mat.at<double>(2,0);
+    out_K.at<double>(1,2)=in_intrinsic_Mat.at<double>(3,0);
+
+    //update rotations and translations
+    for(const auto & id_extrinsic_pair:in_extrinsics_map)
+    {
+        //get image ID
+        int imgID_int=id_extrinsic_pair.first;
+
+        //get extrinsic
+        cv::Mat extrinsic=id_extrinsic_pair.second;
+
+        //update rotation
+        cv::Mat rotation_vector=extrinsic.rowRange(0,3);
+        cv::Mat rotation_matrix;
+        cv::Rodrigues(rotation_vector,rotation_matrix);
+        out_rotations_map[imgID_int]=rotation_matrix;
+
+        //update translation
+        cv::Mat translation_vector=extrinsic.rowRange(3,6);
+        out_translations_map[imgID_int]=translation_vector;
+    }
+}
+

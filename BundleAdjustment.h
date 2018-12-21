@@ -72,4 +72,12 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
         std::vector<cv::Point3d> & in_structure,
         std::set<int> & in_reconstructed_imgs);
 
+//help update intrinsic ,extrinsic(rotation and translation)
+void Update_Intrinsic_Extrinsic(std::map<int,cv::Mat> & in_extrinsics_map,
+        cv::Mat & in_intrinsic_Mat,
+        cv::Mat & out_K,
+        std::map<int,cv::Mat> & out_rotations_map,
+        std::map<int,cv::Mat> & out_translations_map);
+
+
 #endif //INCREMENTAL_SFM_BUNDLEADJUSTMENT_H

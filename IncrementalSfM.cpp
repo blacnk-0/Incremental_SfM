@@ -46,7 +46,8 @@ void Reconstruct_Initial_Pair(
         MAP_POINT3D & out_point3d_correspondence,
         std::vector<std::vector<int>> & out_correspond_ImgID_FeatID_and_3DPt,
         std::vector<cv::Vec3b> & out_colors,
-        MAP_COLORS & in_all_colors)
+        MAP_COLORS & in_all_colors,
+        std::set<int> & in_reconstructured_track_ID)
 {
     //Projection Matrix [R|T] of the initial two cameras
     cv::Mat projection1(3,4,CV_32FC1);
@@ -106,6 +107,7 @@ void Reconstruct_Initial_Pair(
         //update correspondence and structure
         int trackID=FindTrack_with_ImageIDandFeatID(first_image,in_initial_matches[i].first,in_all_tracks);
         out_point3d_correspondence[count]=trackID;
+        in_reconstructured_track_ID.emplace(trackID);
 
         out_correspond_ImgID_FeatID_and_3DPt[first_image][in_initial_matches[i].first]=count;
         out_correspond_ImgID_FeatID_and_3DPt[second_image][in_initial_matches[i].second]=count;
@@ -511,8 +513,10 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
 
     //Scene Structure
     std::vector<cv::Point3d> structure;
+    std::set<int> reconstructured_track_ID;
     Reconstruct_Initial_Pair(initial_pair,in_K,R,T,vec_kpLocation1,vec_kpLocation2,initial_matches,in_tracks,
-            structure,out_rotations,out_translations,map_point3D,correspond_ImgID_FeatID_and_3DPt,colors,in_colors);
+            structure,out_rotations,out_translations,map_point3D,correspond_ImgID_FeatID_and_3DPt,colors,in_colors,
+            reconstructured_track_ID);
 
     //prepare for bundle adjustment
     cv::Mat intrinsic(cv::Matx41d(in_K.at<double>(0, 0), in_K.at<double>(1, 1), in_K.at<double>(0, 2), in_K.at<double>(1, 2)));
@@ -536,12 +540,15 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
     //do bundle adjustment
     BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs);
 
+    //should I update in_K since bundle adjustment will change intrinsic
+    //extrinsic also need to be updated
+
+    //update extrinsics and intrinsics
+    Update_Intrinsic_Extrinsic(extrinsics,intrinsic,in_K,out_rotations,out_translations);
 
     remaining_images.erase(initial_pair.first);
     remaining_images.erase(initial_pair.second);
 
-    std::set<int> reconstructured_track_ID;
-    FindTrack_with_ImagePair(initial_pair,in_tracks,reconstructured_track_ID);
 
     int d_NextImageID{-1};
     while(Find_Next_Image(remaining_images,reconstructured_track_ID,in_tracks,d_NextImageID))
@@ -578,6 +585,10 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
         }
 
         BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs);
+
+
+        //update extrinsics and intrinsics
+        Update_Intrinsic_Extrinsic(extrinsics,intrinsic,in_K,out_rotations,out_translations);
     }
 
     //save to file

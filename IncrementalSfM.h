@@ -37,7 +37,8 @@ void Reconstruct_Initial_Pair(
         std::map<int,cv::Mat> & out_translations,
         MAP_POINT3D & out_point3d_correspondence,
         std::vector<cv::Vec3b> & out_colors,
-        MAP_COLORS & in_all_colors);
+        MAP_COLORS & in_all_colors,
+        std::set<int> & reconstructured_track_ID);
 
 //First Camera [I|0] , Second Camera [R|T]
 bool Find_Transform_Initial(cv::Mat & in_K,std::vector<cv::Point2f> &in_p1, std::vector<cv::Point2f> &in_p2, cv::Mat &out_R, cv::Mat &out_T);

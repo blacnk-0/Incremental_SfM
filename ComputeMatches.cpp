@@ -26,6 +26,7 @@ void Compute_Matches_Single(const cv::Mat & in_query,const cv::Mat & in_train, s
     }
 
 
+    out_matches.clear();
     for(int i=0;i<knn_matches.size();++i)
     {
         if(knn_matches[i][0].distance > 0.6* knn_matches[i][1].distance || knn_matches[i][0].distance > 5* std::max(min_dist,15.0f))

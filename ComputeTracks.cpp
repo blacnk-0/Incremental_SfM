@@ -16,7 +16,8 @@ void Compute_Tracks(UnionFind &uf_tree, MAP_MATCHES & in_MapMatches,flat_pair_ma
         int I=match.first.first;
         int J=match.first.second;
 
-        for(const auto feat:match.second)
+        const VEC_MATCHES & vec_matches=match.second;
+        for(const auto feat: vec_matches)
         {
             all_feats_to_node.emplace(I,feat.first);
             all_feats_to_node.emplace(J,feat.second);
@@ -82,7 +83,7 @@ void Filter_Tracks(UnionFind & in_ufTree,flat_pair_map<std::pair<int,int>,int> &
         //i-th element of map_node_to_index
         const auto & elem=in_map_node_to_index[i];
         //if imageID has been set in tracks
-        if(tracks[d_TrackID].count(elem.first.first)!=0)
+        if(tracks[d_TrackID].count(elem.first.first))
         {
             problem_tracks.insert(d_TrackID);
         }
