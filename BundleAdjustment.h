@@ -70,7 +70,8 @@ void BundleAdjustment(cv::Mat & in_intrinsic,
         MAP_TRACKS & in_all_tracks,
         MAP_KEYPOINTS & in_all_kps,
         std::vector<cv::Point3d> & in_structure,
-        std::set<int> & in_reconstructed_imgs);
+        std::set<int> & in_reconstructed_imgs,
+        int firstImageID_int);
 
 //help update intrinsic ,extrinsic(rotation and translation)
 void Update_Intrinsic_Extrinsic(std::map<int,cv::Mat> & in_extrinsics_map,

@@ -538,7 +538,7 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
 
 
     //do bundle adjustment
-    BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs);
+    BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs,initial_pair.first);
 
     //should I update in_K since bundle adjustment will change intrinsic
     //extrinsic also need to be updated
@@ -584,8 +584,7 @@ void Main_SfM(cv::Mat & in_K,MAP_IMGS & in_images,MAP_TRACKS & in_tracks,MAP_MAT
             extrinsics[img_id]=extrinsic;
         }
 
-        BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs);
-
+        BundleAdjustment(intrinsic,extrinsics,map_point3D,in_tracks,in_keypoints,structure,reconstructed_imgs,initial_pair.first);
 
         //update extrinsics and intrinsics
         Update_Intrinsic_Extrinsic(extrinsics,intrinsic,in_K,out_rotations,out_translations);

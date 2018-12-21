@@ -4,25 +4,32 @@
 
 #include "BundleAdjustment.h"
 
+//need update first camera
+//morning change follow this log
+//first camera may not be 0
+//in_extrinsics is a map,you should not take it in a counter for loop
+
 void BundleAdjustment(cv::Mat & in_intrinsic,
                       std::map<int,cv::Mat> & in_extrinsics,
                       MAP_POINT3D & in_map_point3d,
                       MAP_TRACKS & in_all_tracks,
                       MAP_KEYPOINTS & in_all_kps,
                       std::vector<cv::Point3d> & in_structure,
-                      std::set<int> & in_reconstructed_imgs)
+                      std::set<int> & in_reconstructed_imgs,
+                      int firstImageID_int)
 {
     ceres::Problem problem;
 
     //load extrinsics
     //rotation and translation
-    for(std::vector<cv::Mat>::size_type i=0;i<in_extrinsics.size();++i)
+    for(const auto & extrinsic_imageID_pair:in_extrinsics)
     {
-        problem.AddParameterBlock(in_extrinsics[i].ptr<double>(),6);
+        cv::Mat extrinsic_Mat=extrinsic_imageID_pair.second;
+        problem.AddParameterBlock(extrinsic_Mat.ptr<double>(),6);
     }
 
     //fix the first camera
-    problem.SetParameterBlockConstant(in_extrinsics[0].ptr<double>());
+    problem.SetParameterBlockConstant(in_extrinsics[firstImageID_int].ptr<double>());
 
     //load intrinsics
     //fx,fy,cx,cy
